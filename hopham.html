@@ -207,6 +207,11 @@
         <input type="text" id="searchInput" list="personList" placeholder="Tìm tên người..." onkeydown="if(event.key==='Enter') searchPerson()">
         <datalist id="personList"></datalist>
         <button onclick="searchPerson()" style="margin-left: 4px;">Tìm</button>
+		<!-- Nút duyệt lần lượt theo thế hệ -->
+		<button id="btnVisit" onclick="visitNextPerson()">Duyệt theo đời</button>
+
+		<!-- Nút reset về Cụ Tổ (Tùy chọn) -->
+		<button id="btnResetVisit" onclick="resetVisit()">Về Cụ Tổ</button>
     </div>
 
     <div class="legend">
@@ -258,16 +263,16 @@ const flatData = [
     { id: "quyen", parent: "tu_phuc_ban", name: "QUYỀN", orderText: "Con thứ 3", isAlive: false, avatar: "" },
     { id: "tung", parent: "cung", name: "TÙNG", orderText: "Con thứ 1", isAlive: false, avatar: "" },
     { id: "quang", parent: "tung", name: "QUANG", orderText: "Con thứ 1", isAlive: false, avatar: "" },
-    { id: "hieu_tu", parent: "tung", name: "HIẾU TỪ", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png", years: "1960 - Nay", bio: "Đang sinh sống cùng con cháu." },
-    { id: "thanh_d5", parent: "hieu_tu", name: "THÀNH", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "tai", parent: "hieu_tu", name: "TÀI", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "tai_CHIỆU", parent: "tai", name: "CHIỆU", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "tai_CHIỆU_CHIẾU", parent: "tai_CHIỆU", name: "CHIẾU", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
+    { id: "hieu_tu", parent: "tung", name: "HIẾU TỪ", orderText: "Con thứ 2", isAlive: false, avatar: "icons8-avatar-80.png", years: "1960 - Nay", bio: "Đang sinh sống cùng con cháu." },
+    { id: "thanh_d5", parent: "hieu_tu", name: "THÀNH", orderText: "Con thứ 2", isAlive: false, avatar: "icons8-avatar-80.png" },
+    { id: "tai", parent: "hieu_tu", name: "TÀI", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
+    { id: "tai_CHIỆU", parent: "tai", name: "CHIỆU", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
+    { id: "tai_CHIỆU_CHIẾU", parent: "tai_CHIỆU", name: "CHIẾU", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "tai_CHIỆU_CHIẾU_CHIỂU", parent: "tai_CHIỆU_CHIẾU", name: "CHIỂU", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "tai_CHIỆU_CHIẾU_CHIỂU_CHÍ", parent: "tai_CHIỆU_CHIẾU_CHIỂU", name: "CHÍ", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "tai_CHIỆU_CHIẾU_CHỈNH", parent: "tai_CHIỆU_CHIẾU", name: "CHỈNH", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "tai_CHIỆU_CHIẾU_CHỈNH_TRUNG", parent: "tai_CHIỆU_CHIẾU_CHỈNH", name: "TRUNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "hoa", parent: "hieu_tu", name: "HOA", orderText: "Con thứ 3", isAlive: true, avatar: "icons8-avatar-80.png" },
+    { id: "hoa", parent: "hieu_tu", name: "HOA", orderText: "Con thứ 3", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "hoa_ĐĂNG", parent: "hoa", name: "ĐĂNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "hoa_ĐĂNG_ĐOAN", parent: "hoa_ĐĂNG", name: "ĐOAN", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "hoa_ĐĂNG_ĐOAN_BÂN", parent: "hoa_ĐĂNG_ĐOAN", name: "BÂN", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
@@ -305,7 +310,7 @@ const flatData = [
     { id: "hoa_ĐÀO_HOÁN_THỤY_ĐIỂN_NAM_HÙNG", parent: "hoa_ĐÀO_HOÁN_THỤY_ĐIỂN_NAM", name: "HÙNG", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "hoa_ĐÀO_HOÁN_THỤY_ĐIỂN_NAM_HÙNG_KHOA", parent: "hoa_ĐÀO_HOÁN_THỤY_ĐIỂN_NAM_HÙNG", name: "KHOA", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "hoa_ĐÀO_HOÁN_THỤY_LIỄN", parent: "hoa_ĐÀO_HOÁN_THỤY", name: "LIỄN", orderText: "Con thứ 4", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "hoa_ĐÀO_TỤY", parent: "hoa_ĐÀO", name: "TỤY", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
+    { id: "hoa_ĐÀO_TỤY", parent: "hoa_ĐÀO", name: "TỤY", orderText: "Con thứ 2", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "hoa_ĐÀO_TỤY_TOẠI", parent: "hoa_ĐÀO_TỤY", name: "TOẠI", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "hoa_ĐÀO_TỤY_SINH", parent: "hoa_ĐÀO_TỤY", name: "SINH", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "hoa_ĐÀO_TỤY_SINH_SẮN", parent: "hoa_ĐÀO_TỤY_SINH", name: "SẮN", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
@@ -329,14 +334,14 @@ const flatData = [
     { id: "hoa_ĐÀO_TỤY_HIỀN-HÈ_HIỂN_HIÊU", parent: "hoa_ĐÀO_TỤY_HIỀN-HÈ_HIỂN", name: "HIÊU???", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "hoa_ĐÀO_TỤY_HIỀN-HÈ_HIÊN", parent: "hoa_ĐÀO_TỤY_HIỀN-HÈ", name: "HIÊN", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "hoa_ĐÀO_TỤY_HIỀN-HÈ_HIÊN_LINH", parent: "hoa_ĐÀO_TỤY_HIỀN-HÈ_HIÊN", name: "LINH", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "hoa_QUẤT", parent: "hoa", name: "QUẤT", orderText: "Con thứ 4", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "hoa_QUẤT_KHƯỢNG", parent: "hoa_QUẤT", name: "KHƯỢNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "hoa_QUẤT_KHƯỢNG_CHIỀN", parent: "hoa_QUẤT_KHƯỢNG", name: "CHIỀN", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "vinh", parent: "thanh_d5", name: "VINH", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "ngan", parent: "thanh_d5", name: "NGÂN", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "ngan_nung", parent: "ngan", name: "NÙNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "ngan_nung_thiep", parent: "ngan_nung", name: "THIỆP", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "ngan_nung_thiep_da", parent: "ngan_nung_thiep", name: "ĐA", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
+    { id: "hoa_QUẤT", parent: "hoa", name: "QUẤT", orderText: "Con thứ 4", isAlive: false, avatar: "icons8-avatar-80.png" },
+    { id: "hoa_QUẤT_KHƯỢNG", parent: "hoa_QUẤT", name: "KHƯỢNG", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
+    { id: "hoa_QUẤT_KHƯỢNG_CHIỀN", parent: "hoa_QUẤT_KHƯỢNG", name: "CHIỀN", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
+    { id: "vinh", parent: "thanh_d5", name: "VỊNH", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
+    { id: "ngan", parent: "thanh_d5", name: "NGÂN", orderText: "Con thứ 2", isAlive: false, avatar: "icons8-avatar-80.png" },
+    { id: "ngan_nung", parent: "ngan", name: "NÙNG", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
+    { id: "ngan_nung_thiep", parent: "ngan_nung", name: "THIỆP", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
+    { id: "ngan_nung_thiep_da", parent: "ngan_nung_thiep", name: "ĐA", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "ngan_nung_thiep_da_toan", parent: "ngan_nung_thiep_da", name: "TOẢN", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "ngan_nung_thiep_da_toan_thinh", parent: "ngan_nung_thiep_da_toan", name: "THỊNH", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "ngan_nung_thiep_da_toan_thinh_khoi", parent: "ngan_nung_thiep_da_toan_thinh", name: "KHÔI", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
@@ -349,7 +354,7 @@ const flatData = [
     { id: "ngan_nung_thiep_quy_dung", parent: "ngan_nung_thiep_quy", name: "DŨNG", orderText: "Con thứ 2", isAlive: true, avatar: "ngan_nung_thiep_quy_dung.jpg" },
     { id: "ngan_nung_thiep_quy_dung_kien", parent: "ngan_nung_thiep_quy_dung", name: "KIÊN", orderText: "Con thứ 1", isAlive: true, avatar: "ngan_nung_thiep_quy_dung_kien.png" },
     { id: "ngan_nung_thiep_quy_dung_thanh", parent: "ngan_nung_thiep_quy_dung", name: "THÀNH", orderText: "Con thứ 2", isAlive: true, avatar: "ngan_nung_thiep_quy_dung_thanh.png" },
-    { id: "ngan_nung_thiep_phu", parent: "ngan_nung_thiep", name: "PHÚ", orderText: "Con thứ 3", isAlive: true, avatar: "icons8-avatar-80.png" },
+    { id: "ngan_nung_thiep_phu", parent: "ngan_nung_thiep", name: "PHÚ", orderText: "Con thứ 3", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "ngan_nung_thiep_phu_hung", parent: "ngan_nung_thiep_phu", name: "HƯNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "ngan_nung_thiep_phu_hung_hai", parent: "ngan_nung_thiep_phu_hung", name: "HẢI", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "ngan_nung_thiep_phu_dao", parent: "ngan_nung_thiep_phu", name: "ĐẠO", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
@@ -369,8 +374,8 @@ const flatData = [
     { id: "ngan_nung_thiep_tan", parent: "ngan_nung_thiep", name: "TẪN", orderText: "Con thứ 5", isAlive: true, avatar: "ngan_nung_thiep_tan.png" },	
     { id: "ngan_nung_thiep_tan_tuyen", parent: "ngan_nung_thiep_tan", name: "TUYẾN", orderText: "Con thứ 1", isAlive: true, avatar: "ngan_nung_thiep_tan_tuyen.png" },	
     { id: "ngan_nung_thiep_tan_tuyen_trung", parent: "ngan_nung_thiep_tan_tuyen", name: "TRUNG", orderText: "Con thứ 1", isAlive: true, avatar: "ngan_nung_thiep_tan_tuyen_trung.png" },	
-    { id: "huy", parent: "thanh_d5", name: "HUY", orderText: "Con thứ 3", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "huy_bieu", parent: "huy", name: "BIỂU", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },		
+    { id: "huy", parent: "thanh_d5", name: "HUY", orderText: "Con thứ 3", isAlive: false, avatar: "icons8-avatar-80.png" },
+    { id: "huy_bieu", parent: "huy", name: "BIỂU", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },		
     { id: "huy_bieu_HIEU", parent: "huy_bieu", name: "HIỂU", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_bieu_HIEU_HOE", parent: "huy_bieu_HIEU", name: "HÒE", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_bieu_HIEU_HOE_HUỲNH", parent: "huy_bieu_HIEU_HOE", name: "HUỲNH", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
@@ -384,17 +389,19 @@ const flatData = [
     { id: "huy_bieu_SUNG_SAN", parent: "huy_bieu_SUNG", name: "SAN", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_bieu_SUNG_SAN_SẢN", parent: "huy_bieu_SUNG_SAN", name: "SẢN", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_bieu_SUNG_SAN_SẢN_HƯNG", parent: "huy_bieu_SUNG_SAN_SẢN", name: "HƯNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "huy_long", parent: "huy", name: "LONG", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
+    { id: "huy_long", parent: "huy", name: "LONG", orderText: "Con thứ 2", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_THUY", parent: "huy_long", name: "THÚY", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_THUY_THIET", parent: "huy_long_THUY", name: "THIẾT", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "huy_long_THUY_THIET_THI", parent: "huy_long_THUY", name: "THI", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
+    { id: "huy_long_THUY_THIET_THI", parent: "huy_long_THUY_THIET", name: "THI", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_THUY_THIET_THI_THẮNG", parent: "huy_long_THUY_THIET_THI", name: "THẮNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_THUY_THIET_THI_THỊNH", parent: "huy_long_THUY_THIET_THI", name: "THỊNH", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "huy_long_THUY_THIET_THU", parent: "huy_long_THUY", name: "THƯ", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
+    { id: "huy_long_THUY_THIET_THU", parent: "huy_long_THUY_THIET", name: "THƯ", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
+	{ id: "huy_long_THUY_THIET_THU_KIÊN", parent: "huy_long_THUY_THIET_THU", name: "KIÊN", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
+	
     { id: "huy_long_THUY_THA", parent: "huy_long_THUY", name: "THA", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_THUY_THA_THO", parent: "huy_long_THUY_THA", name: "THỌ", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_THUY_THA_THO_THAO", parent: "huy_long_THUY_THA_THO", name: "THAO", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "huy_long_BA", parent: "huy_long", name: "BẠ", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
+    { id: "huy_long_BA", parent: "huy_long", name: "BẠ", orderText: "Con thứ 2", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_BA_SON", parent: "huy_long_BA", name: "SƠN", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_BA_TRUONG", parent: "huy_long_BA", name: "TRƯỜNG", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_BA_TRUONG_PHÚC", parent: "huy_long_BA_TRUONG", name: "PHÚC", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
@@ -406,7 +413,7 @@ const flatData = [
     { id: "huy_long_BA_QUAN", parent: "huy_long_BA", name: "QUÂN", orderText: "Con thứ 5", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_BA_QUAN_PHONG", parent: "huy_long_BA_QUAN", name: "PHONG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_BA_QUAN_PHÓNG", parent: "huy_long_BA_QUAN", name: "PHÓNG", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "huy_long_YEN", parent: "huy_long", name: "YẾN", orderText: "Con thứ 3", isAlive: true, avatar: "icons8-avatar-80.png" },
+    { id: "huy_long_YEN", parent: "huy_long", name: "YẾN", orderText: "Con thứ 3", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_YEN_TIẾN", parent: "huy_long_YEN", name: "TIẾN", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_YEN_TIẾN_TAP", parent: "huy_long_YEN_TIẾN", name: "TẤP", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_YEN_TIEN", parent: "huy_long_YEN", name: "TIỀN", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
@@ -419,9 +426,9 @@ const flatData = [
     { id: "huy_long_DUOC_THANH", parent: "huy_long_DUOC", name: "THANH", orderText: "Con thứ 3", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_DUOC_THANH_TUẤN", parent: "huy_long_DUOC_THANH", name: "TUẤN", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_long_DUOC_THANH_TUẤN_TRUNG", parent: "huy_long_DUOC_THANH_TUẤN", name: "TRUNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "huy_dam", parent: "huy", name: "ĐÀM", orderText: "Con thứ 3", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "huy_nha", parent: "huy", name: "NHA", orderText: "Con thứ 4", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "huy_nha_NHUNG", parent: "huy_nha", name: "NHUNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
+    { id: "huy_dam", parent: "huy", name: "ĐÀM", orderText: "Con thứ 3", isAlive: false, avatar: "icons8-avatar-80.png" },
+    { id: "huy_nha", parent: "huy", name: "NHA", orderText: "Con thứ 4", isAlive: false, avatar: "icons8-avatar-80.png" },
+    { id: "huy_nha_NHUNG", parent: "huy_nha", name: "NHUNG", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "huy_nha_NHUNG_NGOC", parent: "huy_nha_NHUNG", name: "NGỌC", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_nha_NHUNG_NGOC_LINH", parent: "huy_nha_NHUNG_NGOC", name: "LINH", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_nha_NHUNG_BANG", parent: "huy_nha_NHUNG", name: "BẰNG", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
@@ -433,7 +440,7 @@ const flatData = [
     { id: "huy_nha_NHUNG_CUONG", parent: "huy_nha_NHUNG", name: "CƯỜNG", orderText: "Con thứ 3", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_nha_NHUNG_CUONG_KIÊN", parent: "huy_nha_NHUNG_CUONG", name: "KIÊN", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_nha_NHUNG_CUONG_TRUNG", parent: "huy_nha_NHUNG_CUONG", name: "TRUNG", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "huy_nha_SUU", parent: "huy_nha", name: "SỬU", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
+    { id: "huy_nha_SUU", parent: "huy_nha", name: "SỬU", orderText: "Con thứ 2", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "huy_nha_SUU_HOANG", parent: "huy_nha_SUU", name: "HOÀNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_nha_SUU_HOANG_HOÀNH", parent: "huy_nha_SUU_HOANG", name: "HOÀNH", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_nha_SUU_HOANG_HOÀNH_VƯƠNG", parent: "huy_nha_SUU_HOANG_HOÀNH", name: "VƯƠNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
@@ -461,6 +468,79 @@ const flatData = [
     { id: "huy_nha_HUNG_HA", parent: "huy_nha_HUNG", name: "HÀ", orderText: "Con thứ 3", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_nha_HUNG_HA_DƯƠNG", parent: "huy_nha_HUNG_HA", name: "DƯƠNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" }
 ];
+
+// Biến lưu danh sách đã sắp xếp theo thứ tự Đời (BFS) và chỉ số hiện tại
+let visitList = [];
+let currentVisitIndex = -1;
+
+// Hàm khởi tạo danh sách duyệt từ Cụ Tổ -> Các Con -> Các Cháu...
+function initVisitList() {
+  if (!flatData || flatData.length === 0) return;
+
+  // Tìm Cụ Tổ (node không có parent hoặc parent là null)
+  const rootNode = flatData.find(d => !d.parent);
+  if (!rootNode) return;
+
+  // Gom nhóm con theo id của cha
+  const childrenMap = new Map();
+  flatData.forEach(item => {
+    if (item.parent) {
+      if (!childrenMap.has(item.parent)) childrenMap.set(item.parent, []);
+      childrenMap.get(item.parent).push(item);
+    }
+  });
+
+  // Thuật toán BFS để xếp thứ tự theo từng Đời
+  visitList = [];
+  const queue = [rootNode];
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    visitList.push(current);
+
+    const children = childrenMap.get(current.id) || [];
+    // Đưa tất cả con của node hiện tại vào hàng chờ
+    children.forEach(child => queue.push(child));
+  }
+}
+
+// Hàm xử lý sự kiện khi bấm nút "Visit Next"
+function visitNextPerson() {
+  // Nếu chưa có danh sách hoặc đã duyệt hết thì khởi tạo lại từ đầu
+  if (visitList.length === 0) {
+    initVisitList();
+  }
+
+  if (visitList.length === 0) return;
+
+  // Tăng chỉ số để đến người tiếp theo
+  currentVisitIndex = (currentVisitIndex + 1) % visitList.length;
+  const targetNodeData = visitList[currentVisitIndex];
+
+  // Mở nhánh cây dẫn tới node
+  if (typeof expandPathToNode === 'function') {
+    expandPathToNode(targetNodeData.id);
+  }
+  
+  // Cập nhật lại giao diện sơ đồ cây
+  if (typeof updateTree === 'function') {
+    updateTree();
+  }
+
+  // Tìm node trong D3 hierarchy và highlight/focus vào node đó
+  const targetNode = root.descendants().find(d => d.id === targetNodeData.id);
+  if (targetNode) {
+    searchedNode = targetNode;
+    if (typeof focusOnNode === 'function') focusOnNode(targetNode);
+    if (typeof startFlashing === 'function') startFlashing();
+  }
+}
+
+// Hàm reset lượt duyệt về Cụ Tổ (nếu cần)
+function resetVisit() {
+  currentVisitIndex = -1;
+  initVisitList();
+}
 
 // Nạp danh sách gợi ý vào ô tìm kiếm
 const personListEl = document.getElementById('personList');
