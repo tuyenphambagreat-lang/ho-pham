@@ -201,12 +201,17 @@
     <button onclick="expandAll()">Mở tất cả</button>
     <button onclick="collapseAll()">Thu gọn</button>
     <button id="toggleLinesBtn" onclick="toggleAllLines()">Bật/Tắt đường dóng</button>
-    
+    <!-- Nút duyệt lần lượt theo thế hệ -->
+		<button id="btnVisit" onclick="visitNextPerson()">Duyệt theo đời</button>
+
+		<!-- Nút reset về Cụ Tổ (Tùy chọn) -->
+		<button id="btnResetVisit" onclick="resetVisit()">Về Cụ Tổ</button>
     <!-- Ô TÌM KIẾM -->
     <div class="search-box">
         <input type="text" id="searchInput" list="personList" placeholder="Tìm tên người..." onkeydown="if(event.key==='Enter') searchPerson()">
         <datalist id="personList"></datalist>
         <button onclick="searchPerson()" style="margin-left: 4px;">Tìm</button>
+		
     </div>
 
     <div class="legend">
@@ -463,6 +468,79 @@ const flatData = [
     { id: "huy_nha_HUNG_HA", parent: "huy_nha_HUNG", name: "HÀ", orderText: "Con thứ 3", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_nha_HUNG_HA_DƯƠNG", parent: "huy_nha_HUNG_HA", name: "DƯƠNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" }
 ];
+
+// Biến lưu danh sách đã sắp xếp theo thứ tự Đời (BFS) và chỉ số hiện tại
+let visitList = [];
+let currentVisitIndex = -1;
+
+// Hàm khởi tạo danh sách duyệt từ Cụ Tổ -> Các Con -> Các Cháu...
+function initVisitList() {
+  if (!flatData || flatData.length === 0) return;
+
+  // Tìm Cụ Tổ (node không có parent hoặc parent là null)
+  const rootNode = flatData.find(d => !d.parent);
+  if (!rootNode) return;
+
+  // Gom nhóm con theo id của cha
+  const childrenMap = new Map();
+  flatData.forEach(item => {
+    if (item.parent) {
+      if (!childrenMap.has(item.parent)) childrenMap.set(item.parent, []);
+      childrenMap.get(item.parent).push(item);
+    }
+  });
+
+  // Thuật toán BFS để xếp thứ tự theo từng Đời
+  visitList = [];
+  const queue = [rootNode];
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    visitList.push(current);
+
+    const children = childrenMap.get(current.id) || [];
+    // Đưa tất cả con của node hiện tại vào hàng chờ
+    children.forEach(child => queue.push(child));
+  }
+}
+
+// Hàm xử lý sự kiện khi bấm nút "Visit Next"
+function visitNextPerson() {
+  // Nếu chưa có danh sách hoặc đã duyệt hết thì khởi tạo lại từ đầu
+  if (visitList.length === 0) {
+    initVisitList();
+  }
+
+  if (visitList.length === 0) return;
+
+  // Tăng chỉ số để đến người tiếp theo
+  currentVisitIndex = (currentVisitIndex + 1) % visitList.length;
+  const targetNodeData = visitList[currentVisitIndex];
+
+  // Mở nhánh cây dẫn tới node
+  if (typeof expandPathToNode === 'function') {
+    expandPathToNode(targetNodeData.id);
+  }
+  
+  // Cập nhật lại giao diện sơ đồ cây
+  if (typeof updateTree === 'function') {
+    updateTree();
+  }
+
+  // Tìm node trong D3 hierarchy và highlight/focus vào node đó
+  const targetNode = root.descendants().find(d => d.id === targetNodeData.id);
+  if (targetNode) {
+    searchedNode = targetNode;
+    if (typeof focusOnNode === 'function') focusOnNode(targetNode);
+    if (typeof startFlashing === 'function') startFlashing();
+  }
+}
+
+// Hàm reset lượt duyệt về Cụ Tổ (nếu cần)
+function resetVisit() {
+  currentVisitIndex = -1;
+  initVisitList();
+}
 
 // Nạp danh sách gợi ý vào ô tìm kiếm
 const personListEl = document.getElementById('personList');
