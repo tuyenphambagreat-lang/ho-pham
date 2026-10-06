@@ -197,12 +197,19 @@
 
 <!-- Thanh công cụ điều khiển chính -->
 <div id="controls" class="hidden-mobile">
+<!-- Ô TÌM KIẾM -->
+    <div class="search-box">
+        <input type="text" id="searchInput" list="personList" placeholder="Tìm tên người..." onkeydown="if(event.key==='Enter') searchPerson()">
+        <datalist id="personList"></datalist>
+        <button onclick="searchPerson()" style="margin-left: 4px;">Tìm</button>		
+    </div>
+	<button id="toggleLinesBtn" onclick="toggleAllLines()">Bật/Tắt đường dóng</button>
     <button onclick="resetZoom()">Góc nhìn chuẩn</button>    
 	<div class="search-box">
        <button onclick="expandAll()">Mở tất cả</button>
 		<button onclick="collapseAll()">Thu gọn</button>
     </div>	
-    <button id="toggleLinesBtn" onclick="toggleAllLines()">Bật/Tắt đường dóng</button>    
+        
 	<div class="search-box">
        <!-- Nút duyệt lần lượt theo thế hệ -->
 		<button id="btnVisit" onclick="visitNextPerson()">Duyệt đời</button>
@@ -210,13 +217,7 @@
 		<!-- Nút reset về Cụ Tổ (Tùy chọn) -->
 		<button id="btnResetVisit" onclick="resetVisit()">Về Cụ Tổ</button>
     </div>
-    <!-- Ô TÌM KIẾM -->
-    <div class="search-box">
-        <input type="text" id="searchInput" list="personList" placeholder="Tìm tên người..." onkeydown="if(event.key==='Enter') searchPerson()">
-        <datalist id="personList"></datalist>
-        <button onclick="searchPerson()" style="margin-left: 4px;">Tìm</button>
-		
-    </div>
+    
 
     <div class="legend">
         <div class="legend-item"><span class="dot" style="background:#2563eb"></span> Sống</div>
