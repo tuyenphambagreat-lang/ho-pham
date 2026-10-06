@@ -197,14 +197,15 @@
 
 <!-- Thanh công cụ điều khiển chính -->
 <div id="controls" class="hidden-mobile">
-    <button onclick="resetZoom()">Góc nhìn chuẩn</button>
-    <button onclick="expandAll()">Mở tất cả</button>
-    <button onclick="collapseAll()">Thu gọn</button>
-    <button id="toggleLinesBtn" onclick="toggleAllLines()">Bật/Tắt đường dóng</button>
-    
+    <button onclick="resetZoom()">Góc nhìn chuẩn</button>    
+	<div class="search-box">
+       <button onclick="expandAll()">Mở tất cả</button>
+		<button onclick="collapseAll()">Thu gọn</button>
+    </div>	
+    <button id="toggleLinesBtn" onclick="toggleAllLines()">Bật/Tắt đường dóng</button>    
 	<div class="search-box">
        <!-- Nút duyệt lần lượt theo thế hệ -->
-		<button id="btnVisit" onclick="visitNextPerson()">Duyệt theo đời</button>
+		<button id="btnVisit" onclick="visitNextPerson()">Duyệt đời</button>
 
 		<!-- Nút reset về Cụ Tổ (Tùy chọn) -->
 		<button id="btnResetVisit" onclick="resetVisit()">Về Cụ Tổ</button>
