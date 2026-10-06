@@ -201,11 +201,14 @@
     <button onclick="expandAll()">Mở tất cả</button>
     <button onclick="collapseAll()">Thu gọn</button>
     <button id="toggleLinesBtn" onclick="toggleAllLines()">Bật/Tắt đường dóng</button>
-    <!-- Nút duyệt lần lượt theo thế hệ -->
+    
+	<div class="search-box">
+       <!-- Nút duyệt lần lượt theo thế hệ -->
 		<button id="btnVisit" onclick="visitNextPerson()">Duyệt theo đời</button>
 
 		<!-- Nút reset về Cụ Tổ (Tùy chọn) -->
 		<button id="btnResetVisit" onclick="resetVisit()">Về Cụ Tổ</button>
+    </div>
     <!-- Ô TÌM KIẾM -->
     <div class="search-box">
         <input type="text" id="searchInput" list="personList" placeholder="Tìm tên người..." onkeydown="if(event.key==='Enter') searchPerson()">
