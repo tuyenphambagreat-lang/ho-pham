@@ -6,7 +6,6 @@
     <title>GIA TỘC HỌ PHẠM BÁ</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        /* 1. RESET & BASIC STYLES */
         body, html {
             margin: 0; padding: 0;
             width: 100%; height: 100%;
@@ -15,12 +14,8 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* 2. STYLE NÚT TOGGLE MENU CHO MOBILE (Floating Action Button) */
-        .toolbar-toggle-btn {
-            display: none; /* Mặc định ẩn trên màn hình máy tính */
-        }
+        .toolbar-toggle-btn { display: none; }
 
-        /* 3. STYLE THANH CÔNG CỤ CHÍNH */
         #controls {
             position: absolute; top: 15px; left: 15px; z-index: 10;
             background: rgba(255, 255, 255, 0.95);
@@ -41,7 +36,6 @@
         #controls button:hover { background: #f1f5f9; border-color: #94a3b8; }
         #controls button.active { background: #991b1b; color: #fff; border-color: #991b1b; }
 
-        /* Ô TÌM KIẾM */
         .search-box {
             position: relative;
             display: flex;
@@ -69,7 +63,6 @@
             clip-path: polygon(0 0, 100% 0, 100% 100%); border-radius: 1px;
         }
 
-        /* 4. RESPONSIVE THIẾT BỊ DI ĐỘNG (Screen <= 768px) */
         @media (max-width: 768px) {
             .toolbar-toggle-btn {
                 display: flex;
@@ -111,11 +104,7 @@
                 transform: translateY(15px);
             }
 
-            #controls button {
-                width: 100%;
-                justify-content: flex-start;
-            }
-
+            #controls button { width: 100%; justify-content: flex-start; }
             .search-box { width: 100%; }
             .search-box input { width: 100%; }
 
@@ -196,12 +185,14 @@
     <button onclick="resetZoom()">Góc nhìn chuẩn</button>    
 	<div class="search-box">
        <button onclick="expandAll()">Mở tất cả</button>
-       <button onclick="collapseAll()">Thu gọn</button>
+		<button onclick="collapseAll()">Thu gọn</button>
     </div>	
+        
 	<div class="search-box">
 		<button id="btnVisit" onclick="visitNextPerson()">Duyệt đời</button>
 		<button id="btnResetVisit" onclick="resetVisit()">Về Cụ Tổ</button>
     </div>
+
     <div class="legend">
         <div class="legend-item"><span class="dot" style="background:#2563eb"></span> Sống</div>
         <div class="legend-item"><span class="ribbon-icon"></span> Đã mất</div>
@@ -336,8 +327,8 @@ const flatData = [
     { id: "ngan_nung_thiep_da_tuyen_giang", parent: "ngan_nung_thiep_da_tuyen", name: "GIANG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "ngan_nung_thiep_quy", parent: "ngan_nung_thiep", name: "QUÝ", orderText: "Con thứ 2", isAlive: true, avatar: "ngan_nung_thiep_quy.png" },
     { id: "ngan_nung_thiep_quy_quang", parent: "ngan_nung_thiep_quy", name: "QUANG", orderText: "Con thứ 1", isAlive: true, avatar: "ngan_nung_thiep_quy_quang.png" },
-    { id: "ngan_nung_thiep_quy_quang_minh", parent: "ngan_nung_thiep_quy_quang", name: "MINH", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
-    { id: "ngan_nung_thiep_quy_dung", parent: "ngan_nung_thiep_quy", name: "DŨNG", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
+    { id: "ngan_nung_thiep_quy_quang_minh", parent: "ngan_nung_thiep_quy_quang", name: "MINH", orderText: "Con thứ 1", isAlive: true, avatar: "ngan_nung_thiep_quy_quang_minh.png" },
+    { id: "ngan_nung_thiep_quy_dung", parent: "ngan_nung_thiep_quy", name: "DŨNG", orderText: "Con thứ 2", isAlive: true, avatar: "ngan_nung_thiep_quy_dung.jpg" },
     { id: "ngan_nung_thiep_quy_dung_kien", parent: "ngan_nung_thiep_quy_dung", name: "KIÊN", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "ngan_nung_thiep_quy_dung_thanh", parent: "ngan_nung_thiep_quy_dung", name: "THÀNH", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "ngan_nung_thiep_phu", parent: "ngan_nung_thiep", name: "PHÚ", orderText: "Con thứ 3", isAlive: false, avatar: "icons8-avatar-80.png" },
@@ -455,12 +446,43 @@ const flatData = [
     { id: "huy_nha_HUNG_HA", parent: "huy_nha_HUNG", name: "HÀ", orderText: "Con thứ 3", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "huy_nha_HUNG_HA_DƯƠNG", parent: "huy_nha_HUNG_HA", name: "DƯƠNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" }
 ];
-
 let visitList = [];
 let currentVisitIndex = -1;
 
+let branchFlashAlpha = 0;
+let animFrameId = null;
+let activeBranchIds = new Set();
+
+function getSubtreeIds(rootNode, targetIds = []) {
+    const ids = new Set();
+    const targets = Array.isArray(targetIds) ? targetIds : [targetIds];
+
+    targets.forEach(targetId => {
+        const target = rootNode.descendants().find(d => d.id === targetId);
+        if (target) {
+            target.descendants().forEach(d => ids.add(d.id));
+        }
+    });
+
+    return ids;
+}
+
+function startBranchFlashing() {
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+    let angle = 0;
+
+    function renderLoop() {
+        angle = (angle + 0.08) % (Math.PI * 2);
+        branchFlashAlpha = (Math.sin(angle) + 1) / 2;
+        draw();
+        animFrameId = requestAnimationFrame(renderLoop);
+    }
+    renderLoop();
+}
+
 function initVisitList() {
   if (!flatData || flatData.length === 0) return;
+
   const rootNode = flatData.find(d => !d.parent);
   if (!rootNode) return;
 
@@ -474,9 +496,11 @@ function initVisitList() {
 
   visitList = [];
   const queue = [rootNode];
+
   while (queue.length > 0) {
     const current = queue.shift();
     visitList.push(current);
+
     const children = childrenMap.get(current.id) || [];
     children.forEach(child => queue.push(child));
   }
@@ -489,14 +513,14 @@ function visitNextPerson() {
   currentVisitIndex = (currentVisitIndex + 1) % visitList.length;
   const targetNodeData = visitList[currentVisitIndex];
 
-  expandPathToNode(targetNodeData.id);
-  updateTree();
+  if (typeof expandPathToNode === 'function') expandPathToNode(targetNodeData.id);
+  if (typeof updateTree === 'function') updateTree();
 
   const targetNode = root.descendants().find(d => d.id === targetNodeData.id);
   if (targetNode) {
     searchedNode = targetNode;
-    focusOnNode(targetNode);
-    startFlashing();
+    if (typeof focusOnNode === 'function') focusOnNode(targetNode);
+    if (typeof startFlashing === 'function') startFlashing();
   }
 }
 
@@ -536,7 +560,7 @@ const romanNumeral = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X
 const stratify = d3.stratify().id(d => d.id).parentId(d => d.parent);
 const root = stratify(flatData);
 
-const levelHeight = 125; 
+const levelHeight = 110; 
 const nodeWidth = 145; 
 const nodeHeight = 52; 
 
@@ -571,14 +595,22 @@ function getLoadedImage(src) {
 bgDrumImg.onload = () => draw();
 
 function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
+    const dpr = window.devicePixelRatio || 1;
+    width = window.innerWidth;
+    height = window.innerHeight;
+
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+
+    ctx.scale(dpr, dpr);
     draw();
 }
 window.addEventListener('resize', resize);
 
-const treeLayout = d3.tree().nodeSize([nodeWidth + 18, levelHeight]).separation((a, b) => {
-    return a.parent === b.parent ? 1.05 : 1.25;
+const treeLayout = d3.tree().nodeSize([nodeWidth + 12, levelHeight]).separation((a, b) => {
+    return a.parent === b.parent ? 1 : 1.18;
 });
 
 function updateTree() {
@@ -589,6 +621,14 @@ function updateTree() {
     for (let i = 0; i <= maxDepth; i++) {
         if (activeLines[i] === undefined) activeLines[i] = true;
     }
+
+    const keysToFlash = ["ngan"]; 
+    activeBranchIds = getSubtreeIds(root, keysToFlash);
+    activeBranchIds.add("thanh_d5");
+	activeBranchIds.add("vinh");
+	activeBranchIds.add("huy");	
+	
+    startBranchFlashing();
     draw();
 }
 
@@ -596,23 +636,229 @@ function draw() {
     ctx.save();
     ctx.clearRect(0, 0, width, height);
 
-    if (bgDrumImg.complete && bgDrumImg.naturalWidth !== 0) {
-        const drumSize = Math.min(width, height) * 0.85;
-        const drumX = (width - drumSize) / 2;
-        const drumY = (height - drumSize) / 2;
-        
-        ctx.save();
-        ctx.globalAlpha = 0.08; 
-        ctx.drawImage(bgDrumImg, drumX, drumY, drumSize, drumSize);
-        ctx.restore();
-    }
-	
     const maxDepth = d3.max(root.descendants(), d => d.depth);
     const highlightedIds = new Set();
     if (hoveredNode) {
         hoveredNode.descendants().forEach(desc => highlightedIds.add(desc.id));
     }
 
+    // =========================================================================
+    // 0. VẼ TRỐNG ĐỒNG CỐ ĐỊNH CHÍNH GIỮA MÀN HÌNH TĨNH (KHÔNG CO GIÃN)
+    // =========================================================================
+    if (bgDrumImg.complete && bgDrumImg.naturalWidth !== 0) {
+        const drumSize = Math.min(width, height) * 0.82; 
+        const drumX = (width - drumSize) / 2;
+        const drumY = (height - drumSize) / 2;
+
+        ctx.save();
+        ctx.globalAlpha = 0.065; 
+        ctx.drawImage(bgDrumImg, drumX, drumY, drumSize, drumSize);
+        ctx.restore();
+    }
+
+    // =========================================================================
+    // A. VẼ CÂY GIA PHẢ (BIẾN ĐỔI THEO ZOOM / PAN)
+    // =========================================================================
+    ctx.save();
+    ctx.translate(transform.x, transform.y);
+    ctx.scale(transform.k, transform.k);
+
+    // 1. VẼ ĐƯỜNG NỐI CHA - CON
+    root.links().forEach(link => {
+        const isHighlighted = hoveredNode && 
+            highlightedIds.has(link.source.id) && 
+            highlightedIds.has(link.target.id);
+
+        const isBranchLink = activeBranchIds.has(link.source.id) && activeBranchIds.has(link.target.id);
+        const targetGenColor = getGenColor(link.target.depth);
+
+        ctx.beginPath();
+
+        if (isBranchLink) {
+            ctx.strokeStyle = `rgba(2, 132, 199, ${0.4 + branchFlashAlpha * 0.6})`;
+            ctx.lineWidth = 1.8 + branchFlashAlpha * 1.5;
+        } else {
+            ctx.strokeStyle = isHighlighted ? "#2563eb" : targetGenColor.stroke;
+            ctx.globalAlpha = isHighlighted ? 1 : 0.65;
+            ctx.lineWidth = isHighlighted ? 2.2 : 1.2;
+        }
+
+        const sourceX = link.source.x;
+        const sourceY = link.source.y + nodeHeight / 2;
+        const targetX = link.target.x;
+        const targetY = link.target.y - nodeHeight / 2;
+        const midY = (sourceY + targetY) / 2;
+
+        ctx.moveTo(sourceX, sourceY);
+        ctx.lineTo(sourceX, midY);
+        ctx.lineTo(targetX, midY);
+        ctx.lineTo(targetX, targetY);
+        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+    });
+
+    // 2. VẼ THẺ CÁ NHÂN
+    root.descendants().forEach(d => {
+        if (isNaN(d.x) || isNaN(d.y)) return;
+
+        const isRootNode = (d.depth === 0);
+        
+        const currentWidth = isRootNode ? 185 : nodeWidth;
+        const currentHeight = isRootNode ? 68 : nodeHeight;
+
+        const x = Math.round(d.x - currentWidth / 2);
+        const y = Math.round(d.y - currentHeight / 2);
+
+        const isAlive = d.data.isAlive !== false;
+        const genColor = getGenColor(d.depth);
+
+        const isHighlighted = !hoveredNode || highlightedIds.has(d.id);
+        const opacity = isHighlighted ? 1 : 0.4;
+        const isBranchNode = activeBranchIds.has(d.id);
+
+        ctx.save();
+        ctx.globalAlpha = opacity;
+
+        if (searchedNode && d.id === searchedNode.id) {
+            ctx.fillStyle = isFlashed ? "#fef08a" : "#fff";
+            ctx.strokeStyle = "#dc2626";
+            ctx.lineWidth = 3.5;
+        } else if (hoveredNode && d.id === hoveredNode.id) {
+            ctx.fillStyle = "#ffffff"; 
+            ctx.strokeStyle = "#1d4ed8";
+            ctx.lineWidth = 2.5;
+        } else if (isRootNode) {
+            ctx.fillStyle = "#881337"; 
+            ctx.strokeStyle = "#f59e0b";
+            ctx.lineWidth = 2.5;
+        } else if (hoveredNode && highlightedIds.has(d.id)) {
+            ctx.fillStyle = genColor.bg;
+            ctx.strokeStyle = genColor.main;
+            ctx.lineWidth = 2;
+        } else {
+            ctx.fillStyle = isAlive ? genColor.bg : "#f1f5f9";
+            if (isBranchNode) {
+                ctx.strokeStyle = `rgba(2, 132, 199, ${0.4 + branchFlashAlpha * 0.6})`;
+                ctx.lineWidth = 2 + branchFlashAlpha * 1.5;
+            } else {
+                ctx.strokeStyle = isAlive ? genColor.stroke : "#64748b";
+                ctx.lineWidth = 1.5;
+            }
+        }
+
+        ctx.beginPath();
+        ctx.roundRect(x, y, currentWidth, currentHeight, isRootNode ? 10 : 6);
+        ctx.fill();
+        ctx.stroke();
+
+        if (isBranchNode && !isRootNode) {
+            ctx.beginPath();
+            ctx.roundRect(x - 2, y - 2, currentWidth + 4, currentHeight + 4, 8);
+            ctx.strokeStyle = `rgba(56, 189, 248, ${branchFlashAlpha * 0.8})`;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+
+        ctx.fillStyle = isRootNode ? "#fbbf24" : genColor.main;
+        ctx.beginPath();
+        ctx.roundRect(x, y, isRootNode ? 7 : 5, currentHeight, [6, 0, 0, 6]);
+        ctx.fill();
+
+        if (!isAlive && !isRootNode) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.roundRect(x, y, currentWidth, currentHeight, 6);
+            ctx.clip();
+
+            ctx.beginPath();
+            ctx.moveTo(x + currentWidth - 18, y);
+            ctx.lineTo(x + currentWidth, y);
+            ctx.lineTo(x + currentWidth, y + 18);
+            ctx.closePath();
+            ctx.fillStyle = "#334155";
+            ctx.fill();
+            ctx.restore();
+        }
+
+        const avatarSize = isRootNode ? 44 : 34;
+        const avatarX = Math.round(x + (isRootNode ? 12 : 10));
+        const avatarY = Math.round(y + (currentHeight - avatarSize) / 2);
+        const imgObj = getLoadedImage(d.data.avatar);
+        
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+        ctx.clip();
+
+        if (imgObj && imgObj.complete && imgObj.naturalWidth !== 0) {
+            ctx.drawImage(imgObj, avatarX, avatarY, avatarSize, avatarSize);
+        } else {
+            ctx.fillStyle = isRootNode ? "#9f1239" : "#cbd5e1";
+            ctx.fillRect(avatarX, avatarY, avatarSize, avatarSize);
+        }
+        ctx.restore();
+
+        ctx.beginPath();
+        ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+        ctx.strokeStyle = isRootNode ? "#fef08a" : genColor.stroke;
+        ctx.lineWidth = isRootNode ? 2 : 1.5;
+        ctx.stroke();
+
+        const textX = avatarX + avatarSize + (isRootNode ? 10 : 8);
+        ctx.textAlign = "left";
+        
+        if (isRootNode) {
+            ctx.fillStyle = "#fef08a";
+            ctx.font = "bold 14px 'Segoe UI', Tahoma, Arial, sans-serif";
+            ctx.fillText(d.data.name, textX, y + 28);
+
+            ctx.fillStyle = "#fde047";
+            ctx.font = "bold 11px 'Segoe UI', Tahoma, Arial, sans-serif";
+            ctx.fillText("👑 " + (d.data.orderText || "Cụ Thủy Tổ"), textX, y + 48);
+        } else {
+            ctx.fillStyle = isAlive ? "#0f172a" : "#334155";
+            ctx.font = "bold 12px 'Segoe UI', Arial, sans-serif";
+            ctx.fillText(d.data.name, textX, y + 22);
+
+            ctx.fillStyle = genColor.main;
+            ctx.font = "500 10px 'Segoe UI', Arial, sans-serif";
+            ctx.fillText(d.data.orderText || "", textX, y + 37);
+        }
+
+        // Vẽ nút cộng/trừ nếu node có con hoặc đang bị ẩn con
+        if (d.children || d._children) {
+            const btnX = d.x;
+            const btnY = y + currentHeight;
+            const btnRadius = 8;
+
+            ctx.save();
+            ctx.fillStyle = isRootNode ? "#fef08a" : genColor.main;
+            ctx.beginPath();
+            ctx.arc(btnX, btnY, btnRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 11px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            // Nếu có _children nghĩa là đang thu gọn -> hiển thị dấu "+", ngược lại hiển thị dấu "-"
+            const symbol = d._children ? "+" : "-";
+            ctx.fillText(symbol, btnX, btnY);
+            ctx.restore();
+        }
+
+        ctx.restore();
+    });
+
+    ctx.restore();
+
+    // =========================================================================
+    // B. VẼ TRỤC ĐỜI CỐ ĐỊNH BÊN TRÁI MÀN HÌNH
+    // =========================================================================
     for (let depth = 0; depth <= maxDepth; depth++) {
         const lineY = transform.applyY(depth * levelHeight);
         const isLineActive = !!activeLines[depth];
@@ -652,200 +898,6 @@ function draw() {
     ctx.lineTo(80, height);
     ctx.stroke();
 
-    ctx.save();
-    ctx.translate(transform.x, transform.y);
-    ctx.scale(transform.k, transform.k);
-
-    root.links().forEach(link => {
-        if (isNaN(link.source.x) || isNaN(link.target.x)) return;
-
-        const isHighlighted = hoveredNode && 
-            highlightedIds.has(link.source.id) && 
-            highlightedIds.has(link.target.id);
-
-        const targetGenColor = getGenColor(link.target.depth);
-        const isSourceRoot = !link.source.parent;
-        const sourceNodeHeight = isSourceRoot ? nodeHeight + 28 : nodeHeight;
-
-        ctx.beginPath();
-        ctx.strokeStyle = isHighlighted ? "#2563eb" : (isSourceRoot ? "#b45309" : targetGenColor.stroke);
-        ctx.globalAlpha = isHighlighted ? 1 : (isSourceRoot ? 0.85 : 0.65);
-        ctx.lineWidth = isHighlighted ? 2.5 : (isSourceRoot ? 2.0 : 1.2);
-
-        const sourceX = link.source.x;
-        const sourceY = link.source.y + sourceNodeHeight / 2;
-        const targetX = link.target.x;
-        const targetY = link.target.y - nodeHeight / 2;
-        const midY = (sourceY + targetY) / 2;
-
-        ctx.moveTo(sourceX, sourceY);
-        ctx.lineTo(sourceX, midY);
-        ctx.lineTo(targetX, midY);
-        ctx.lineTo(targetX, targetY);
-        ctx.stroke();
-        ctx.globalAlpha = 1.0;
-    });
-
-    root.descendants().forEach(d => {
-        if (isNaN(d.x) || isNaN(d.y)) return;
-
-        const isRoot = !d.parent; 
-        const curWidth = isRoot ? nodeWidth + 55 : nodeWidth;   
-        const curHeight = isRoot ? nodeHeight + 28 : nodeHeight; 
-
-        const x = d.x - curWidth / 2;
-        const y = d.y - curHeight / 2;
-        const isAlive = d.data.isAlive !== false;
-        const genColor = getGenColor(d.depth);
-
-        const isHighlighted = !hoveredNode || highlightedIds.has(d.id);
-        const opacity = isHighlighted ? 1 : 0.4;
-
-        ctx.save();
-        ctx.globalAlpha = opacity;
-
-        if (isRoot) {
-            ctx.shadowColor = "rgba(180, 83, 9, 0.45)";
-            ctx.shadowBlur = 16;
-
-            // Đảm bảo tọa độ tạo gradient an toàn
-            const grad = ctx.createLinearGradient(x, y, x, y + curHeight);
-            grad.addColorStop(0, "#fffbeb");
-            grad.addColorStop(1, "#fef3c7");
-            ctx.fillStyle = grad;
-            ctx.strokeStyle = "#991b1b"; 
-            ctx.lineWidth = 3.5;
-        } else if (searchedNode && d.id === searchedNode.id) {
-            ctx.fillStyle = isFlashed ? "#fef08a" : "#fff";
-            ctx.strokeStyle = "#dc2626";
-            ctx.lineWidth = 3.5;
-        } else if (hoveredNode && d.id === hoveredNode.id) {
-            ctx.fillStyle = "#ffffff"; 
-            ctx.strokeStyle = "#1d4ed8";
-            ctx.lineWidth = 2.5;
-        } else if (hoveredNode && highlightedIds.has(d.id)) {
-            ctx.fillStyle = genColor.bg;
-            ctx.strokeStyle = genColor.main;
-            ctx.lineWidth = 2;
-        } else {
-            ctx.fillStyle = isAlive ? genColor.bg : "#f1f5f9";
-            ctx.strokeStyle = isAlive ? genColor.stroke : "#64748b";
-            ctx.lineWidth = 1.5;
-        }
-
-        ctx.beginPath();
-        ctx.roundRect(x, y, curWidth, curHeight, isRoot ? 12 : 6);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.shadowBlur = 0; 
-
-        ctx.fillStyle = isRoot ? "#991b1b" : genColor.main;
-        ctx.beginPath();
-        ctx.roundRect(x, y, isRoot ? 8 : 5, curHeight, [isRoot ? 12 : 6, 0, 0, isRoot ? 12 : 6]);
-        ctx.fill();
-
-        if (isRoot) {
-            ctx.strokeStyle = "#d97706";
-            ctx.lineWidth = 1.2;
-            ctx.beginPath();
-            ctx.roundRect(x + 4, y + 4, curWidth - 8, curHeight - 8, 9);
-            ctx.stroke();
-
-            const cornerLen = 8;
-            ctx.strokeStyle = "#991b1b";
-            ctx.lineWidth = 2;
-            
-            ctx.beginPath(); ctx.moveTo(x + 7, y + 7 + cornerLen); ctx.lineTo(x + 7, y + 7); ctx.lineTo(x + 7 + cornerLen, y + 7); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(x + curWidth - 7 - cornerLen, y + 7); ctx.lineTo(x + curWidth - 7, y + 7); ctx.lineTo(x + curWidth - 7, y + 7 + cornerLen); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(x + 7, y + curHeight - 7 - cornerLen); ctx.lineTo(x + 7, y + curHeight - 7); ctx.lineTo(x + 7 + cornerLen, y + curHeight - 7); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(x + curWidth - 7 - cornerLen, y + curHeight - 7); ctx.lineTo(x + curWidth - 7, y + curHeight - 7); ctx.lineTo(x + curWidth - 7, y + curHeight - 7 - cornerLen); ctx.stroke();
-        }
-
-        if (!isAlive && !isRoot) {
-            ctx.save();
-            ctx.beginPath();
-            ctx.roundRect(x, y, curWidth, curHeight, 6);
-            ctx.clip();
-
-            ctx.beginPath();
-            ctx.moveTo(x + curWidth - 18, y);
-            ctx.lineTo(x + curWidth, y);
-            ctx.lineTo(x + curWidth, y + 18);
-            ctx.closePath();
-            ctx.fillStyle = "#334155";
-            ctx.fill();
-            ctx.restore();
-        }
-
-        const avatarSize = isRoot ? 54 : 34;
-        const avatarX = x + (isRoot ? 14 : 10);
-        const avatarY = y + (curHeight - avatarSize) / 2;
-        const imgObj = getLoadedImage(d.data.avatar);
-        
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
-        ctx.clip();
-
-        if (imgObj && imgObj.complete && imgObj.naturalWidth !== 0) {
-            ctx.drawImage(imgObj, avatarX, avatarY, avatarSize, avatarSize);
-        } else {
-            ctx.fillStyle = isRoot ? "#fde68a" : "#cbd5e1";
-            ctx.fillRect(avatarX, avatarY, avatarSize, avatarSize);
-            
-            if (isRoot) {
-                ctx.fillStyle = "#78350f";
-                ctx.font = "bold 20px 'Segoe UI', Arial";
-                ctx.textAlign = "center";
-                ctx.fillText("祖", avatarX + avatarSize / 2, avatarY + avatarSize / 2 + 7);
-            }
-        }
-        ctx.restore();
-
-        ctx.beginPath();
-        ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
-        ctx.strokeStyle = isRoot ? "#b45309" : genColor.stroke;
-        ctx.lineWidth = isRoot ? 2.5 : 1.5;
-        ctx.stroke();
-
-        const textX = avatarX + avatarSize + (isRoot ? 12 : 8);
-        ctx.textAlign = "left";
-        
-        ctx.fillStyle = isRoot ? "#78350f" : (isAlive ? "#0f172a" : "#334155");
-        ctx.font = isRoot ? "bold 15px 'Segoe UI', Arial" : "bold 12px Arial";
-        ctx.fillText(d.data.name, textX, y + (isRoot ? 32 : 22));
-
-        ctx.fillStyle = isRoot ? "#991b1b" : genColor.main;
-        ctx.font = isRoot ? "bold 12px 'Segoe UI', Arial" : "500 10px Arial";
-        ctx.fillText(d.data.orderText || "", textX, y + (isRoot ? 51 : 37));
-
-        const hasChildren = (d.children && d.children.length > 0) || (d._children && d._children.length > 0);
-        if (hasChildren) {
-            const btnX = d.x;
-            const btnY = d.y + curHeight / 2 + 10;
-            
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(btnX, btnY, 9, 0, Math.PI * 2);
-            ctx.fillStyle = isRoot ? "#991b1b" : genColor.main;
-            ctx.fill();
-            ctx.strokeStyle = "#ffffff";
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-
-            ctx.fillStyle = "#ffffff";
-            ctx.font = "bold 12px Arial";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(d._children ? "+" : "-", btnX, btnY);
-            ctx.restore();
-        }
-
-        ctx.restore();
-    });
-
-    ctx.restore();
     ctx.restore();
 }
 
@@ -853,6 +905,7 @@ function toggleMobileToolbar(event) {
     event.stopPropagation();
     const toolbar = document.getElementById("controls");
     const icon = document.getElementById("toggleIcon");
+
     const isHidden = toolbar.classList.toggle("hidden-mobile");
     icon.textContent = isHidden ? "⚙️" : "✖️";
 }
@@ -921,11 +974,10 @@ function searchPerson() {
 
 function expandPathToNode(nodeId) {
     let current = flatData.find(d => d.id === nodeId);
-    let curr = current;
     const ancestors = [];
-    while (curr && curr.parent) {
-        ancestors.push(curr.parent);
-        curr = flatData.find(d => d.id === curr.parent);
+    while (current && current.parent) {
+        ancestors.push(current.parent);
+        current = flatData.find(d => d.id === current.parent);
     }
 
     root.descendants().forEach(d => {
@@ -983,14 +1035,13 @@ canvas.addEventListener('mousemove', (e) => {
     const worldY = (mouseY - transform.y) / transform.k;
 
     root.descendants().forEach(d => {
-        if (isNaN(d.x) || isNaN(d.y)) return;
-        const isRoot = !d.parent;
-        const curWidth = isRoot ? nodeWidth + 55 : nodeWidth;
-        const curHeight = isRoot ? nodeHeight + 28 : nodeHeight;
+        const isRootNode = (d.depth === 0);
+        const w = isRootNode ? 185 : nodeWidth;
+        const h = isRootNode ? 68 : nodeHeight;
 
-        const x = d.x - curWidth / 2;
-        const y = d.y - curHeight / 2;
-        if (worldX >= x && worldX <= x + curWidth && worldY >= y && worldY <= y + curHeight) {
+        const x = d.x - w / 2;
+        const y = d.y - h / 2;
+        if (worldX >= x && worldX <= x + w && worldY >= y && worldY <= y + h) {
             newlyHoveredNode = d;
         }
     });
@@ -1043,21 +1094,23 @@ canvas.addEventListener('click', (e) => {
     const worldY = (mouseY - transform.y) / transform.k;
 
     let clickedNode = null;
-    root.descendants().forEach(d => {
-        if (isNaN(d.x) || isNaN(d.y)) return;
-        const isRoot = !d.parent;
-        const curWidth = isRoot ? nodeWidth + 55 : nodeWidth;
-        const curHeight = isRoot ? nodeHeight + 28 : nodeHeight;
+    let clickedToggleBtn = false;
 
-        const x = d.x - curWidth / 2;
-        const y = d.y - curHeight / 2;
-        
-        const hasChildren = (d.children && d.children.length > 0) || (d._children && d._children.length > 0);
-        if (hasChildren) {
+    root.descendants().forEach(d => {
+        const isRootNode = (d.depth === 0);
+        const w = isRootNode ? 185 : nodeWidth;
+        const h = isRootNode ? 68 : nodeHeight;
+
+        const x = d.x - w / 2;
+        const y = d.y - h / 2;
+
+        // Kiểm tra xem click có nằm vào nút cộng/trừ ở đáy thẻ không
+        if (d.children || d._children) {
             const btnX = d.x;
-            const btnY = d.y + curHeight / 2 + 10;
-            const dist = Math.hypot(worldX - btnX, worldY - btnY);
-            if (dist <= 14) {
+            const btnY = y + h;
+            const distance = Math.hypot(worldX - btnX, worldY - btnY);
+            if (distance <= 12) {
+                clickedToggleBtn = true;
                 if (d.children) {
                     d._children = d.children;
                     d.children = null;
@@ -1066,16 +1119,15 @@ canvas.addEventListener('click', (e) => {
                     d._children = null;
                 }
                 updateTree();
-                return;
             }
         }
 
-        if (worldX >= x && worldX <= x + curWidth && worldY >= y && worldY <= y + curHeight) {
+        if (!clickedToggleBtn && worldX >= x && worldX <= x + w && worldY >= y && worldY <= y + h) {
             clickedNode = d;
         }
     });
 
-    if (clickedNode) {
+    if (clickedNode && !clickedToggleBtn) {
         //showModal(clickedNode.data);
     }
 });
@@ -1145,10 +1197,8 @@ document.getElementById('searchInput').addEventListener('input', () => {
     currentSearchIndex = -1;
 });
 
-// Khởi chạy
 resize();
 resetZoom();
-initVisitList();
 updateTree();
 </script>
 
