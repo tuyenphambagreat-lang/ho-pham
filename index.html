@@ -731,9 +731,16 @@ function draw() {
     });
 
     // Thẻ Cá Nhân
+    // Thẻ Cá Nhân
     root.descendants().forEach(d => {
-        const x = d.x - nodeWidth / 2;
-        const y = d.y - nodeHeight / 2;
+        const isRoot = !d.parent; // Kiểm tra xem có phải Cụ Thủy Tổ (Root Node) hay không
+
+        // Tăng kích thước riêng cho Cụ Thủy Tổ để tạo sự trang trọng
+        const curWidth = isRoot ? nodeWidth + 35 : nodeWidth;   // Rộng hơn
+        const curHeight = isRoot ? nodeHeight + 16 : nodeHeight; // Cao hơn
+
+        const x = d.x - curWidth / 2;
+        const y = d.y - curHeight / 2;
         const isAlive = d.data.isAlive !== false;
         const genColor = getGenColor(d.depth);
 
@@ -743,7 +750,17 @@ function draw() {
         ctx.save();
         ctx.globalAlpha = opacity;
 
-        if (searchedNode && d.id === searchedNode.id) {
+        // --- CẤU HÌNH PHONG CÁCH VẼ CHO CỤ THỦY TỔ VS CÁC NODE KHÁC ---
+        if (isRoot) {
+            // Hiệu ứng viền phát hào quang / bóng mờ trang trọng cho Cụ Thủy Tổ
+            ctx.shadowColor = "rgba(180, 83, 9, 0.4)";
+            ctx.shadowBlur = 12;
+
+            // Nền gấm vàng / đỏ cao quý
+            ctx.fillStyle = "#fffbeb"; 
+            ctx.strokeStyle = "#991b1b"; // Viền đỏ thẫm
+            ctx.lineWidth = 3;
+        } else if (searchedNode && d.id === searchedNode.id) {
             ctx.fillStyle = isFlashed ? "#fef08a" : "#fff";
             ctx.strokeStyle = "#dc2626";
             ctx.lineWidth = 3.5;
@@ -761,35 +778,51 @@ function draw() {
             ctx.lineWidth = 1.5;
         }
 
+        // Vẽ khung chính
         ctx.beginPath();
-        ctx.roundRect(x, y, nodeWidth, nodeHeight, 6);
+        ctx.roundRect(x, y, curWidth, curHeight, isRoot ? 10 : 6);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = genColor.main;
+        // Tắt bóng mờ sau khi vẽ khung
+        ctx.shadowBlur = 0;
+
+        // Vẽ viền trang trí bên trái
+        ctx.fillStyle = isRoot ? "#991b1b" : genColor.main;
         ctx.beginPath();
-        ctx.roundRect(x, y, 5, nodeHeight, [6, 0, 0, 6]);
+        ctx.roundRect(x, y, isRoot ? 7 : 5, curHeight, [isRoot ? 10 : 6, 0, 0, isRoot ? 10 : 6]);
         ctx.fill();
 
-        if (!isAlive) {
+        // Vẽ khung viền kép hoàng gia màu vàng kim dành riêng cho Cụ Tổ
+        if (isRoot) {
+            ctx.strokeStyle = "#b45309";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(x + 3, y + 3, curWidth - 6, curHeight - 6, 8);
+            ctx.stroke();
+        }
+
+        // Vẽ dải băng tang góc trên bên phải nếu đã mất (cho node thường)
+        if (!isAlive && !isRoot) {
             ctx.save();
             ctx.beginPath();
-            ctx.roundRect(x, y, nodeWidth, nodeHeight, 6);
+            ctx.roundRect(x, y, curWidth, curHeight, 6);
             ctx.clip();
 
             ctx.beginPath();
-            ctx.moveTo(x + nodeWidth - 18, y);
-            ctx.lineTo(x + nodeWidth, y);
-            ctx.lineTo(x + nodeWidth, y + 18);
+            ctx.moveTo(x + curWidth - 18, y);
+            ctx.lineTo(x + curWidth, y);
+            ctx.lineTo(x + curWidth, y + 18);
             ctx.closePath();
             ctx.fillStyle = "#334155";
             ctx.fill();
             ctx.restore();
         }
 
-        const avatarSize = 34;
-        const avatarX = x + 10;
-        const avatarY = y + (nodeHeight - avatarSize) / 2;
+        // --- CẤU HÌNH AVATAR ---
+        const avatarSize = isRoot ? 46 : 34; // Avatar Cụ Tổ to hơn
+        const avatarX = x + (isRoot ? 12 : 10);
+        const avatarY = y + (curHeight - avatarSize) / 2;
         const imgObj = getLoadedImage(d.data.avatar);
         
         ctx.save();
@@ -805,28 +838,33 @@ function draw() {
         }
         ctx.restore();
 
+        // Viền Avatar
         ctx.beginPath();
         ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
-        ctx.strokeStyle = genColor.stroke;
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = isRoot ? "#b45309" : genColor.stroke;
+        ctx.lineWidth = isRoot ? 2 : 1.5;
         ctx.stroke();
 
-        const textX = avatarX + avatarSize + 8;
+        // --- CẤU HÌNH CHỮ & THÔNG TIN ---
+        const textX = avatarX + avatarSize + (isRoot ? 10 : 8);
         ctx.textAlign = "left";
         
-        ctx.fillStyle = isAlive ? "#0f172a" : "#334155";
-        ctx.font = "bold 12px Arial";
-        ctx.fillText(d.data.name, textX, y + 22);
+        // Tên
+        ctx.fillStyle = isRoot ? "#78350f" : (isAlive ? "#0f172a" : "#334155");
+        ctx.font = isRoot ? "bold 14px 'Segoe UI', Arial" : "bold 12px Arial";
+        ctx.fillText(d.data.name, textX, y + (isRoot ? 26 : 22));
 
-        ctx.fillStyle = genColor.main;
-        ctx.font = "500 10px Arial";
-        ctx.fillText(d.data.orderText || "", textX, y + 37);
+        // Thứ tự / Danh hiệu (Cụ Thủy Tổ)
+        ctx.fillStyle = isRoot ? "#991b1b" : genColor.main;
+        ctx.font = isRoot ? "bold 11px 'Segoe UI', Arial" : "500 10px Arial";
+        ctx.fillText(d.data.orderText || "", textX, y + (isRoot ? 43 : 37));
 
+        // Biểu tượng dấu '+' thu gọn nếu có con
         if (d._children) {
-            ctx.fillStyle = genColor.main;
-            ctx.font = "bold 12px Arial";
+            ctx.fillStyle = isRoot ? "#991b1b" : genColor.main;
+            ctx.font = "bold 13px Arial";
             ctx.textAlign = "center";
-            ctx.fillText("+", d.x, d.y + nodeHeight / 2 + 10);
+            ctx.fillText("+", d.x, d.y + curHeight / 2 + 12);
         }
 
         ctx.restore();
