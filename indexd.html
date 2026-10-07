@@ -6,7 +6,6 @@
     <title>GIA TỘC HỌ PHẠM BÁ</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        /* 1. RESET & BASIC STYLES */
         body, html {
             margin: 0; padding: 0;
             width: 100%; height: 100%;
@@ -15,12 +14,8 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* 2. STYLE NÚT TOGGLE MENU CHO MOBILE */
-        .toolbar-toggle-btn {
-            display: none;
-        }
+        .toolbar-toggle-btn { display: none; }
 
-        /* 3. STYLE THANH CÔNG CỤ CHÍNH */
         #controls {
             position: absolute; top: 15px; left: 15px; z-index: 10;
             background: rgba(255, 255, 255, 0.95);
@@ -41,7 +36,6 @@
         #controls button:hover { background: #f1f5f9; border-color: #94a3b8; }
         #controls button.active { background: #991b1b; color: #fff; border-color: #991b1b; }
 
-        /* Ô TÌM KIẾM */
         .search-box {
             position: relative;
             display: flex;
@@ -69,7 +63,6 @@
             clip-path: polygon(0 0, 100% 0, 100% 100%); border-radius: 1px;
         }
 
-        /* 4. RESPONSIVE THIẾT BỊ DI ĐỘNG (Screen <= 768px) */
         @media (max-width: 768px) {
             .toolbar-toggle-btn {
                 display: flex;
@@ -111,17 +104,9 @@
                 transform: translateY(15px);
             }
 
-            #controls button {
-                width: 100%;
-                justify-content: flex-start;
-            }
-
-            .search-box {
-                width: 100%;
-            }
-            .search-box input {
-                width: 100%;
-            }
+            #controls button { width: 100%; justify-content: flex-start; }
+            .search-box { width: 100%; }
+            .search-box input { width: 100%; }
 
             .legend {
                 margin-left: 0;
@@ -131,7 +116,6 @@
             }
         }
 
-        /* 5. CANVAS & TOOLTIP & MODAL */
         #canvas { display: block; width: 100%; height: 100%; cursor: default; }
 
         #tooltip {
@@ -186,15 +170,12 @@
 </head>
 <body>
 
-<!-- Nút kích hoạt Menu nổi dành riêng cho Mobile -->
 <button id="toolbarToggleBtn" class="toolbar-toggle-btn" onclick="toggleMobileToolbar(event)">
     <span id="toggleIcon">⚙️</span>
     <span>Công cụ</span>
 </button>
 
-<!-- Thanh công cụ điều khiển chính -->
 <div id="controls" class="hidden-mobile">
-<!-- Ô TÌM KIẾM -->
     <div class="search-box">
         <input type="text" id="searchInput" list="personList" placeholder="Tìm tên người..." onkeydown="if(event.key==='Enter') searchPerson()">
         <datalist id="personList"></datalist>
@@ -208,13 +189,9 @@
     </div>	
         
 	<div class="search-box">
-       <!-- Nút duyệt lần lượt theo thế hệ -->
 		<button id="btnVisit" onclick="visitNextPerson()">Duyệt đời</button>
-
-		<!-- Nút reset về Cụ Tổ (Tùy chọn) -->
 		<button id="btnResetVisit" onclick="resetVisit()">Về Cụ Tổ</button>
     </div>
-    
 
     <div class="legend">
         <div class="legend-item"><span class="dot" style="background:#2563eb"></span> Sống</div>
@@ -225,7 +202,6 @@
 <div id="tooltip"></div>
 <canvas id="canvas"></canvas>
 
-<!-- POPUP CHI TIẾT CÁ NHÂN -->
 <div class="modal-overlay" id="infoModal" onclick="closeModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -257,7 +233,6 @@ const dongSonDrumSVG = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABLAAAASwCA
 const bgDrumImg = new Image();
 bgDrumImg.src = dongSonDrumSVG;
 
-// DỮ LIỆU GIA PHẢ CỦA BẠN
 const flatData = [
     { id: "tu_phuc_ban", parent: "", name: "TỰ PHÚC BẢN", orderText: "Cụ Thủy Tổ", isAlive: false, avatar: "", years: "??? - ???", bio: "Cụ Tổ khởi dựng dòng họ Tự Phúc Bản." },
     { id: "cung", parent: "tu_phuc_ban", name: "CUNG", orderText: "Con thứ 1", isAlive: false, avatar: "" },
@@ -472,16 +447,13 @@ const flatData = [
     { id: "huy_nha_HUNG_HA_DƯƠNG", parent: "huy_nha_HUNG_HA", name: "DƯƠNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" }
 ];
 
-// Biến lưu danh sách đã sắp xếp theo thứ tự Đời (BFS) và chỉ số hiện tại
 let visitList = [];
 let currentVisitIndex = -1;
 
-// BIẾN HIỆU ỨNG HÀO QUANG CƠ NĂNG (PULSE GLOW)
 let branchFlashAlpha = 0;
-let branchFlashTimer = null;
+let animFrameId = null;
 let activeBranchIds = new Set();
 
-// Hàm lấy tất cả ID của 1 hoặc nhiều targetId truyền vào (Nhận mảng hoặc chuỗi)
 function getSubtreeIds(rootNode, targetIds = []) {
     const ids = new Set();
     const targets = Array.isArray(targetIds) ? targetIds : [targetIds];
@@ -496,19 +468,19 @@ function getSubtreeIds(rootNode, targetIds = []) {
     return ids;
 }
 
-// Bắt đầu hiệu ứng phát sáng mượt dạng hình Sin (Nhịp thở 30 FPS)
 function startBranchFlashing() {
-    if (branchFlashTimer) clearInterval(branchFlashTimer);
-    
+    if (animFrameId) cancelAnimationFrame(animFrameId);
     let angle = 0;
-    branchFlashTimer = setInterval(() => {
-        angle = (angle + 0.12) % (Math.PI * 2);
-        branchFlashAlpha = 0.2 + (Math.sin(angle) + 1) * 0.4; 
+
+    function renderLoop() {
+        angle = (angle + 0.08) % (Math.PI * 2);
+        branchFlashAlpha = (Math.sin(angle) + 1) / 2;
         draw();
-    }, 33);
+        animFrameId = requestAnimationFrame(renderLoop);
+    }
+    renderLoop();
 }
 
-// Hàm khởi tạo danh sách duyệt từ Cụ Tổ -> Các Con -> Các Cháu...
 function initVisitList() {
   if (!flatData || flatData.length === 0) return;
 
@@ -536,22 +508,14 @@ function initVisitList() {
 }
 
 function visitNextPerson() {
-  if (visitList.length === 0) {
-    initVisitList();
-  }
-
+  if (visitList.length === 0) initVisitList();
   if (visitList.length === 0) return;
 
   currentVisitIndex = (currentVisitIndex + 1) % visitList.length;
   const targetNodeData = visitList[currentVisitIndex];
 
-  if (typeof expandPathToNode === 'function') {
-    expandPathToNode(targetNodeData.id);
-  }
-  
-  if (typeof updateTree === 'function') {
-    updateTree();
-  }
+  if (typeof expandPathToNode === 'function') expandPathToNode(targetNodeData.id);
+  if (typeof updateTree === 'function') updateTree();
 
   const targetNode = root.descendants().find(d => d.id === targetNodeData.id);
   if (targetNode) {
@@ -631,11 +595,6 @@ function getLoadedImage(src) {
 }
 bgDrumImg.onload = () => draw();
 
-<!-- function resize() { -->
-    <!-- width = canvas.width = window.innerWidth; -->
-    <!-- height = canvas.height = window.innerHeight; -->
-    <!-- draw(); -->
-<!-- } -->
 function resize() {
     const dpr = window.devicePixelRatio || 1;
     width = window.innerWidth;
@@ -664,13 +623,12 @@ function updateTree() {
         if (activeLines[i] === undefined) activeLines[i] = true;
     }
 
-    // THÊM TAY CÁC KEY BẠN MUỐN PHÁT SÁNG VÀO MẢNG NÀY:
     const keysToFlash = ["ngan"]; 
     activeBranchIds = getSubtreeIds(root, keysToFlash);
-	activeBranchIds.add("thanh_d5");
+    activeBranchIds.add("thanh_d5");
 	activeBranchIds.add("vinh");
 	activeBranchIds.add("huy");	
-    
+	
     startBranchFlashing();
     draw();
 }
@@ -679,24 +637,210 @@ function draw() {
     ctx.save();
     ctx.clearRect(0, 0, width, height);
 
-    if (bgDrumImg.complete && bgDrumImg.naturalWidth !== 0) {
-        const drumSize = Math.min(width, height) * 0.85;
-        const drumX = (width - drumSize) / 2;
-        const drumY = (height - drumSize) / 2;
-        
-        ctx.save();
-        ctx.globalAlpha = 0.08; 
-        ctx.drawImage(bgDrumImg, drumX, drumY, drumSize, drumSize);
-        ctx.restore();
-    }
-	
     const maxDepth = d3.max(root.descendants(), d => d.depth);
     const highlightedIds = new Set();
     if (hoveredNode) {
         hoveredNode.descendants().forEach(desc => highlightedIds.add(desc.id));
     }
 
-    // 1. DÒNG THẾ HỆ VÀ TRỤC Y BÊN TRÁI
+    // =========================================================================
+    // 0. VẼ TRỐNG ĐỒNG CỐ ĐỊNH CHÍNH GIỮA MÀN HÌNH TĨNH (KHÔNG CO GIÃN)
+    // =========================================================================
+    if (bgDrumImg.complete && bgDrumImg.naturalWidth !== 0) {
+        const drumSize = Math.min(width, height) * 0.82; // Kích thước đẹp chuẩn 82% màn hình
+        const drumX = (width - drumSize) / 2;
+        const drumY = (height - drumSize) / 2;
+
+        ctx.save();
+        ctx.globalAlpha = 0.065; // Mờ nhẹ sang trọng
+        ctx.drawImage(bgDrumImg, drumX, drumY, drumSize, drumSize);
+        ctx.restore();
+    }
+
+    // =========================================================================
+    // A. VẼ CÂY GIA PHẢ (BIẾN ĐỔI THEO ZOOM / PAN)
+    // =========================================================================
+    ctx.save();
+    ctx.translate(transform.x, transform.y);
+    ctx.scale(transform.k, transform.k);
+
+    // 1. VẼ ĐƯỜNG NỐI CHA - CON
+    root.links().forEach(link => {
+        const isHighlighted = hoveredNode && 
+            highlightedIds.has(link.source.id) && 
+            highlightedIds.has(link.target.id);
+
+        const isBranchLink = activeBranchIds.has(link.source.id) && activeBranchIds.has(link.target.id);
+        const targetGenColor = getGenColor(link.target.depth);
+
+        ctx.beginPath();
+
+        if (isBranchLink) {
+            ctx.strokeStyle = `rgba(2, 132, 199, ${0.4 + branchFlashAlpha * 0.6})`;
+            ctx.lineWidth = 1.8 + branchFlashAlpha * 1.5;
+        } else {
+            ctx.strokeStyle = isHighlighted ? "#2563eb" : targetGenColor.stroke;
+            ctx.globalAlpha = isHighlighted ? 1 : 0.65;
+            ctx.lineWidth = isHighlighted ? 2.2 : 1.2;
+        }
+
+        const sourceX = link.source.x;
+        const sourceY = link.source.y + nodeHeight / 2;
+        const targetX = link.target.x;
+        const targetY = link.target.y - nodeHeight / 2;
+        const midY = (sourceY + targetY) / 2;
+
+        ctx.moveTo(sourceX, sourceY);
+        ctx.lineTo(sourceX, midY);
+        ctx.lineTo(targetX, midY);
+        ctx.lineTo(targetX, targetY);
+        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+    });
+
+    // 2. VẼ THẺ CÁ NHÂN
+    root.descendants().forEach(d => {
+        if (isNaN(d.x) || isNaN(d.y)) return;
+
+        const isRootNode = (d.depth === 0);
+        
+        const currentWidth = isRootNode ? 185 : nodeWidth;
+        const currentHeight = isRootNode ? 68 : nodeHeight;
+
+        const x = Math.round(d.x - currentWidth / 2);
+        const y = Math.round(d.y - currentHeight / 2);
+
+        const isAlive = d.data.isAlive !== false;
+        const genColor = getGenColor(d.depth);
+
+        const isHighlighted = !hoveredNode || highlightedIds.has(d.id);
+        const opacity = isHighlighted ? 1 : 0.4;
+        const isBranchNode = activeBranchIds.has(d.id);
+
+        ctx.save();
+        ctx.globalAlpha = opacity;
+
+        if (searchedNode && d.id === searchedNode.id) {
+            ctx.fillStyle = isFlashed ? "#fef08a" : "#fff";
+            ctx.strokeStyle = "#dc2626";
+            ctx.lineWidth = 3.5;
+        } else if (hoveredNode && d.id === hoveredNode.id) {
+            ctx.fillStyle = "#ffffff"; 
+            ctx.strokeStyle = "#1d4ed8";
+            ctx.lineWidth = 2.5;
+        } else if (isRootNode) {
+            ctx.fillStyle = "#881337"; 
+            ctx.strokeStyle = "#f59e0b";
+            ctx.lineWidth = 2.5;
+        } else if (hoveredNode && highlightedIds.has(d.id)) {
+            ctx.fillStyle = genColor.bg;
+            ctx.strokeStyle = genColor.main;
+            ctx.lineWidth = 2;
+        } else {
+            ctx.fillStyle = isAlive ? genColor.bg : "#f1f5f9";
+            if (isBranchNode) {
+                ctx.strokeStyle = `rgba(2, 132, 199, ${0.4 + branchFlashAlpha * 0.6})`;
+                ctx.lineWidth = 2 + branchFlashAlpha * 1.5;
+            } else {
+                ctx.strokeStyle = isAlive ? genColor.stroke : "#64748b";
+                ctx.lineWidth = 1.5;
+            }
+        }
+
+        ctx.beginPath();
+        ctx.roundRect(x, y, currentWidth, currentHeight, isRootNode ? 10 : 6);
+        ctx.fill();
+        ctx.stroke();
+
+        if (isBranchNode && !isRootNode) {
+            ctx.beginPath();
+            ctx.roundRect(x - 2, y - 2, currentWidth + 4, currentHeight + 4, 8);
+            ctx.strokeStyle = `rgba(56, 189, 248, ${branchFlashAlpha * 0.8})`;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+
+        ctx.fillStyle = isRootNode ? "#fbbf24" : genColor.main;
+        ctx.beginPath();
+        ctx.roundRect(x, y, isRootNode ? 7 : 5, currentHeight, [6, 0, 0, 6]);
+        ctx.fill();
+
+        if (!isAlive && !isRootNode) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.roundRect(x, y, currentWidth, currentHeight, 6);
+            ctx.clip();
+
+            ctx.beginPath();
+            ctx.moveTo(x + currentWidth - 18, y);
+            ctx.lineTo(x + currentWidth, y);
+            ctx.lineTo(x + currentWidth, y + 18);
+            ctx.closePath();
+            ctx.fillStyle = "#334155";
+            ctx.fill();
+            ctx.restore();
+        }
+
+        const avatarSize = isRootNode ? 44 : 34;
+        const avatarX = Math.round(x + (isRootNode ? 12 : 10));
+        const avatarY = Math.round(y + (currentHeight - avatarSize) / 2);
+        const imgObj = getLoadedImage(d.data.avatar);
+        
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+        ctx.clip();
+
+        if (imgObj && imgObj.complete && imgObj.naturalWidth !== 0) {
+            ctx.drawImage(imgObj, avatarX, avatarY, avatarSize, avatarSize);
+        } else {
+            ctx.fillStyle = isRootNode ? "#9f1239" : "#cbd5e1";
+            ctx.fillRect(avatarX, avatarY, avatarSize, avatarSize);
+        }
+        ctx.restore();
+
+        ctx.beginPath();
+        ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+        ctx.strokeStyle = isRootNode ? "#fef08a" : genColor.stroke;
+        ctx.lineWidth = isRootNode ? 2 : 1.5;
+        ctx.stroke();
+
+        const textX = avatarX + avatarSize + (isRootNode ? 10 : 8);
+        ctx.textAlign = "left";
+        
+        if (isRootNode) {
+            ctx.fillStyle = "#fef08a";
+            ctx.font = "bold 14px 'Segoe UI', Tahoma, Arial, sans-serif";
+            ctx.fillText(d.data.name, textX, y + 28);
+
+            ctx.fillStyle = "#fde047";
+            ctx.font = "bold 11px 'Segoe UI', Tahoma, Arial, sans-serif";
+            ctx.fillText("👑 " + (d.data.orderText || "Cụ Thủy Tổ"), textX, y + 48);
+        } else {
+            ctx.fillStyle = isAlive ? "#0f172a" : "#334155";
+            ctx.font = "bold 12px 'Segoe UI', Arial, sans-serif";
+            ctx.fillText(d.data.name, textX, y + 22);
+
+            ctx.fillStyle = genColor.main;
+            ctx.font = "500 10px 'Segoe UI', Arial, sans-serif";
+            ctx.fillText(d.data.orderText || "", textX, y + 37);
+        }
+
+        if (d._children) {
+            ctx.fillStyle = isRootNode ? "#fef08a" : genColor.main;
+            ctx.font = "bold 12px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("+", d.x, d.y + currentHeight / 2 + 10);
+        }
+
+        ctx.restore();
+    });
+
+    ctx.restore();
+
+    // =========================================================================
+    // B. VẼ TRỤC ĐỜI CỐ ĐỊNH BÊN TRÁI MÀN HÌNH
+    // =========================================================================
     for (let depth = 0; depth <= maxDepth; depth++) {
         const lineY = transform.applyY(depth * levelHeight);
         const isLineActive = !!activeLines[depth];
@@ -736,201 +880,6 @@ function draw() {
     ctx.lineTo(80, height);
     ctx.stroke();
 
-    // 2. VẼ ĐỒ THỊ CÂY GIA PHẢ
-    ctx.save();
-    ctx.translate(transform.x, transform.y);
-    ctx.scale(transform.k, transform.k);
-
-    // Đường Nối Cha - Con
-    root.links().forEach(link => {
-        const isHighlighted = hoveredNode && 
-            highlightedIds.has(link.source.id) && 
-            highlightedIds.has(link.target.id);
-
-        const isBranchLink = activeBranchIds.has(link.source.id) && activeBranchIds.has(link.target.id);
-        const targetGenColor = getGenColor(link.target.depth);
-
-        ctx.beginPath();
-
-        if (isBranchLink) {
-            ctx.save();
-            ctx.shadowColor = "#0284c7";
-            ctx.shadowBlur = 8 * branchFlashAlpha;
-            ctx.strokeStyle = `rgba(2, 132, 199, ${0.5 + branchFlashAlpha * 0.5})`;
-            ctx.lineWidth = 1.8 + branchFlashAlpha * 1.2;
-            ctx.globalAlpha = 1.0;
-        } else {
-            ctx.strokeStyle = isHighlighted ? "#2563eb" : targetGenColor.stroke;
-            ctx.globalAlpha = isHighlighted ? 1 : 0.65;
-            ctx.lineWidth = isHighlighted ? 2.2 : 1.2;
-        }
-
-        const sourceX = link.source.x;
-        const sourceY = link.source.y + nodeHeight / 2;
-        const targetX = link.target.x;
-        const targetY = link.target.y - nodeHeight / 2;
-        const midY = (sourceY + targetY) / 2;
-
-        ctx.moveTo(sourceX, sourceY);
-        ctx.lineTo(sourceX, midY);
-        ctx.lineTo(targetX, midY);
-        ctx.lineTo(targetX, targetY);
-        ctx.stroke();
-
-        if (isBranchLink) ctx.restore();
-        ctx.globalAlpha = 1.0;
-    });
-
-    // Thẻ Cá Nhân
-    // 2. VẼ THẺ CÁ NHÂN (PHONG CÁCH TỐI GIẢN - SANG TRỌNG)
-    root.descendants().forEach(d => {
-        if (isNaN(d.x) || isNaN(d.y)) return;
-
-        const isRootNode = (d.depth === 0); // Kiểm tra Cụ Thủy Tổ
-        
-        // Cụ Tổ rộng hơn và cao hơn 1 chút để tạo điểm nhấn
-        const currentWidth = isRootNode ? nodeWidth + 24 : nodeWidth;
-        const currentHeight = isRootNode ? nodeHeight + 10 : nodeHeight;
-
-        // Làm tròn toạ độ số nguyên để nét vẽ Canvas không bị mờ/răng cưa
-        const x = Math.round(d.x - currentWidth / 2);
-        const y = Math.round(d.y - currentHeight / 2);
-
-        const isAlive = d.data.isAlive !== false;
-        const genColor = getGenColor(d.depth);
-
-        const isHighlighted = !hoveredNode || highlightedIds.has(d.id);
-        const opacity = isHighlighted ? 1 : 0.4;
-        const isBranchNode = activeBranchIds.has(d.id);
-
-        ctx.save();
-        ctx.globalAlpha = opacity;
-
-        // Hiệu ứng Hào quang khi thuộc nhánh chọn
-        if (isBranchNode && !(searchedNode && d.id === searchedNode.id)) {
-            ctx.shadowColor = "#0284c7";
-            ctx.shadowBlur = 10 * branchFlashAlpha;
-        }
-
-        // --- TÔ MÀU VÀ VIỀN THẺ ---
-        if (searchedNode && d.id === searchedNode.id) {
-            ctx.fillStyle = isFlashed ? "#fef08a" : "#fff";
-            ctx.strokeStyle = "#dc2626";
-            ctx.lineWidth = 3;
-        } else if (hoveredNode && d.id === hoveredNode.id) {
-            ctx.fillStyle = "#ffffff"; 
-            ctx.strokeStyle = "#1d4ed8";
-            ctx.lineWidth = 2.5;
-        } else if (isRootNode) {
-            // CỤ TỔ: Nền màu đỏ son nhung cổ kính, viền vàng kim tinh tế
-            ctx.fillStyle = "#881337"; 
-            ctx.strokeStyle = "#f59e0b";
-            ctx.lineWidth = 2;
-        } else if (hoveredNode && highlightedIds.has(d.id)) {
-            ctx.fillStyle = genColor.bg;
-            ctx.strokeStyle = genColor.main;
-            ctx.lineWidth = 2;
-        } else {
-            ctx.fillStyle = isAlive ? genColor.bg : "#f1f5f9";
-            if (isBranchNode) {
-                ctx.strokeStyle = `rgba(2, 132, 199, ${0.4 + branchFlashAlpha * 0.6})`;
-                ctx.lineWidth = 2 + branchFlashAlpha * 1.5;
-            } else {
-                ctx.strokeStyle = isAlive ? genColor.stroke : "#64748b";
-                ctx.lineWidth = 1.5;
-            }
-        }
-
-        // Vẽ thẻ bo góc chuẩn HD
-        ctx.beginPath();
-        ctx.roundRect(x, y, currentWidth, currentHeight, isRootNode ? 10 : 6);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.shadowColor = "transparent"; // Tắt bóng để chữ/ảnh nét căng
-
-        // Vạch mép trái (Cụ Tổ vạch màu vàng, người thường màu theo Đời)
-        ctx.fillStyle = isRootNode ? "#fbbf24" : genColor.main;
-        ctx.beginPath();
-        ctx.roundRect(x, y, 6, currentHeight, [6, 0, 0, 6]);
-        ctx.fill();
-
-        // Ruy băng đen nếu đã mất
-        if (!isAlive && !isRootNode) {
-            ctx.save();
-            ctx.beginPath();
-            ctx.roundRect(x, y, currentWidth, currentHeight, 6);
-            ctx.clip();
-
-            ctx.beginPath();
-            ctx.moveTo(x + currentWidth - 18, y);
-            ctx.lineTo(x + currentWidth, y);
-            ctx.lineTo(x + currentWidth, y + 18);
-            ctx.closePath();
-            ctx.fillStyle = "#334155";
-            ctx.fill();
-            ctx.restore();
-        }
-
-        // AVATAR
-        const avatarSize = isRootNode ? 38 : 34;
-        const avatarX = Math.round(x + 10);
-        const avatarY = Math.round(y + (currentHeight - avatarSize) / 2);
-        const imgObj = getLoadedImage(d.data.avatar);
-        
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
-        ctx.clip();
-
-        if (imgObj && imgObj.complete && imgObj.naturalWidth !== 0) {
-            ctx.drawImage(imgObj, avatarX, avatarY, avatarSize, avatarSize);
-        } else {
-            ctx.fillStyle = isRootNode ? "#9f1239" : "#cbd5e1";
-            ctx.fillRect(avatarX, avatarY, avatarSize, avatarSize);
-        }
-        ctx.restore();
-
-        // Viền Avatar
-        ctx.beginPath();
-        ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
-        ctx.strokeStyle = isRootNode ? "#fef08a" : genColor.stroke;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        // CHỮ VÀ DÒNG TÊN
-        const textX = avatarX + avatarSize + 10;
-        ctx.textAlign = "left";
-        
-        if (isRootNode) {
-            // Tên Cụ Tổ: Chữ vàng nhạt phát sáng nhẹ
-            ctx.fillStyle = "#fef08a";
-            ctx.font = "bold 13px 'Segoe UI', Arial, sans-serif";
-            ctx.fillText(d.data.name, textX, y + 24);
-
-            ctx.fillStyle = "#fde047";
-            ctx.font = "600 10px 'Segoe UI', Arial, sans-serif";
-            ctx.fillText("👑 " + (d.data.orderText || "Cụ Thủy Tổ"), textX, y + 40);
-        } else {
-            ctx.fillStyle = isAlive ? "#0f172a" : "#334155";
-            ctx.font = "bold 12px 'Segoe UI', Arial, sans-serif";
-            ctx.fillText(d.data.name, textX, y + 22);
-
-            ctx.fillStyle = genColor.main;
-            ctx.font = "500 10px 'Segoe UI', Arial, sans-serif";
-            ctx.fillText(d.data.orderText || "", textX, y + 37);
-        }
-
-        if (d._children) {
-            ctx.fillStyle = isRootNode ? "#fef08a" : genColor.main;
-            ctx.font = "bold 12px Arial";
-            ctx.textAlign = "center";
-            ctx.fillText("+", d.x, d.y + currentHeight / 2 + 10);
-        }
-
-        ctx.restore();
-    });
-    ctx.restore();
     ctx.restore();
 }
 
@@ -1067,9 +1016,13 @@ canvas.addEventListener('mousemove', (e) => {
     const worldY = (mouseY - transform.y) / transform.k;
 
     root.descendants().forEach(d => {
-        const x = d.x - nodeWidth / 2;
-        const y = d.y - nodeHeight / 2;
-        if (worldX >= x && worldX <= x + nodeWidth && worldY >= y && worldY <= y + nodeHeight) {
+        const isRootNode = (d.depth === 0);
+        const w = isRootNode ? 185 : nodeWidth;
+        const h = isRootNode ? 68 : nodeHeight;
+
+        const x = d.x - w / 2;
+        const y = d.y - h / 2;
+        if (worldX >= x && worldX <= x + w && worldY >= y && worldY <= y + h) {
             newlyHoveredNode = d;
         }
     });
@@ -1123,9 +1076,13 @@ canvas.addEventListener('click', (e) => {
 
     let clickedNode = null;
     root.descendants().forEach(d => {
-        const x = d.x - nodeWidth / 2;
-        const y = d.y - nodeHeight / 2;
-        if (worldX >= x && worldX <= x + nodeWidth && worldY >= y && worldY <= y + nodeHeight) {
+        const isRootNode = (d.depth === 0);
+        const w = isRootNode ? 185 : nodeWidth;
+        const h = isRootNode ? 68 : nodeHeight;
+
+        const x = d.x - w / 2;
+        const y = d.y - h / 2;
+        if (worldX >= x && worldX <= x + w && worldY >= y && worldY <= y + h) {
             clickedNode = d;
         }
     });
@@ -1200,7 +1157,6 @@ document.getElementById('searchInput').addEventListener('input', () => {
     currentSearchIndex = -1;
 });
 
-// Khởi chạy
 resize();
 resetZoom();
 updateTree();
