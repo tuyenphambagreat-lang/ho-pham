@@ -7,7 +7,7 @@ const flatData = [
     { id: "tung", parent: "cung", name: "TÙNG", orderText: "Con thứ 1", isAlive: false, avatar: "" },
     { id: "quang", parent: "tung", name: "QUANG", orderText: "Con thứ 1", isAlive: false, avatar: "" },
     { id: "hieu_tu", parent: "tung", name: "HIẾU TỪ", orderText: "Con thứ 2", isAlive: false, avatar: "icons8-avatar-80.png", years: "1960 - Nay", bio: "Đang sinh sống cùng con cháu." },
-    { id: "thanh_d5", parent: "hieu_tu", name: "THÀNH", orderText: "Con thứ 2", isAlive: false, avatar: "icons8-avatar-80.png" },
+    
     { id: "tai", parent: "hieu_tu", name: "TÀI", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "tai_CHIỆU", parent: "tai", name: "CHIỆU", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "tai_CHIỆU_CHIẾU", parent: "tai_CHIỆU", name: "CHIẾU", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
@@ -15,6 +15,7 @@ const flatData = [
     { id: "tai_CHIỆU_CHIẾU_CHIỂU_CHÍ", parent: "tai_CHIỆU_CHIẾU_CHIỂU", name: "CHÍ", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "tai_CHIỆU_CHIẾU_CHỈNH", parent: "tai_CHIỆU_CHIẾU", name: "CHỈNH", orderText: "Con thứ 2", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "tai_CHIỆU_CHIẾU_CHỈNH_TRUNG", parent: "tai_CHIỆU_CHIẾU_CHỈNH", name: "TRUNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
+	{ id: "thanh_d5", parent: "hieu_tu", name: "THÀNH", orderText: "Con thứ 2", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "hoa", parent: "hieu_tu", name: "HOA", orderText: "Con thứ 3", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "hoa_ĐĂNG", parent: "hoa", name: "ĐĂNG", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "hoa_ĐĂNG_ĐOAN", parent: "hoa_ĐĂNG", name: "ĐOAN", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
