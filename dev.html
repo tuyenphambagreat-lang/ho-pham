@@ -1098,7 +1098,7 @@ d3.select(canvas).call(zoom);
 function resetZoom() {
     searchedNode = null;
     d3.select(canvas).transition().duration(400)
-        .call(zoom.transform, d3.zoomIdentity.translate(width / 2 + 30, 50));
+        .call(zoom.transform, d3.zoomIdentity.translate(width / 2 + 30, 120));
 }
 
 document.getElementById('searchInput').addEventListener('input', () => {
