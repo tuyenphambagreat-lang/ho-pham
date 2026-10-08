@@ -185,7 +185,10 @@
         <datalist id="personList"></datalist>
         <button onclick="searchPerson()" style="margin-left: 4px;">Tìm</button>		
     </div>
-	<button id="toggleLinesBtn" onclick="toggleAllLines()" class="active">Tắt đường dóng</button>
+	<div class="search-box">
+       <button id="toggleLinesBtn" onclick="toggleAllLines()" class="active">Tắt đường dóng</button>
+	   <button id="autoPlayBtn" onclick="toggleAutoPlay()">▶️ Auto Run</button>
+    </div>		
     <button onclick="resetZoom()">Góc nhìn chuẩn</button>    
 	<div class="search-box">
        <button onclick="expandAll()">Mở tất cả</button>
@@ -255,6 +258,30 @@ function getSubtreeIds(rootNode, targetIds = []) {
     });
 
     return ids;
+}
+
+let autoPlayTimer = null;
+
+function toggleAutoPlay() {
+    const btn = document.getElementById('autoPlayBtn');
+    
+    if (autoPlayTimer) {
+        // Đang chạy thì bấm để DỪNG
+        clearInterval(autoPlayTimer);
+        autoPlayTimer = null;
+        btn.innerText = "▶️ Auto Run";
+        btn.classList.remove('active');
+    } else {
+        // Đang dừng thì bấm để CHẠY TỰ ĐỘNG
+        btn.innerText = "⏹️ Stop";
+        btn.classList.add('active');
+        
+        autoPlayTimer = setInterval(() => {
+            if (typeof visitNextPerson === 'function') {
+                visitNextPerson();
+            }
+        }, 1500); // 3000ms = 3 giây. Nếu muốn 5 giây thì bạn đổi thành 5000 nhé!
+    }
 }
 
 function startBranchFlashing() {
