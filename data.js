@@ -1,8 +1,8 @@
 // DỮ LIỆU GIA PHẢ CỦA BẠN
 const flatData = [
     { id: "tu_phuc_ban", parent: "", name: "TỰ PHÚC BẢN", orderText: "Cụ Thủy Tổ", isAlive: false, avatar: "", years: "??? - ???", bio: "Cụ Tổ khởi dựng dòng họ Tự Phúc Bản." },
-	{ id: "thanh_d2", parent: "tu_phuc_ban", name: "THANH", orderText: "Con thứ 2", isAlive: false, avatar: "" },
-    { id: "cung", parent: "tu_phuc_ban", name: "CUNG", orderText: "Con thứ 1", isAlive: false, avatar: "" },    
+    { id: "cung", parent: "tu_phuc_ban", name: "CUNG", orderText: "Con thứ 1", isAlive: false, avatar: "" },
+    { id: "thanh_d2", parent: "tu_phuc_ban", name: "THANH", orderText: "Con thứ 2", isAlive: false, avatar: "" },
     { id: "quyen", parent: "tu_phuc_ban", name: "QUYỀN", orderText: "Con thứ 3", isAlive: false, avatar: "" },
     { id: "tung", parent: "cung", name: "TÙNG", orderText: "Con thứ 1", isAlive: false, avatar: "" },
     { id: "quang", parent: "tung", name: "QUANG", orderText: "Con thứ 1", isAlive: false, avatar: "" },
