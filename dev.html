@@ -267,6 +267,43 @@ let autoPlayTimer = null;
 
 function toggleAutoPlay() {
     const btn = document.getElementById('autoPlayBtn');
+    const floatingBtn = document.getElementById('floatingStopBtn');
+    const controlsMenu = document.getElementById('controls'); // Thay thế bằng ID thanh menu của bạn nếu khác
+    
+    if (autoPlayTimer) {
+        // === ĐANG DỪNG LẠI ===
+        clearInterval(autoPlayTimer);
+        autoPlayTimer = null;
+        
+        // Đổi tên nút chính
+        if (btn) btn.innerText = "▶️ Tự động chạy";
+        if (btn) btn.classList.remove('active');
+        
+        // Ẩn nút dừng nổi, hiện lại menu chính
+        if (floatingBtn) floatingBtn.style.display = 'none';
+        if (controlsMenu) controlsMenu.style.display = 'flex'; // Hoặc block tùy CSS của bạn
+        
+    } else {
+        // === BẮT ĐẦU CHẠY TỰ ĐỘNG ===
+        if (btn) btn.innerText = "⏹️ Dừng lại";
+        if (btn) btn.classList.add('active');
+        
+        // Nếu là mobile (màn hình nhỏ <= 768px), ẩn menu chính đi cho thoáng và hiện nút nổi
+        if (window.innerWidth <= 768) {
+            if (controlsMenu) controlsMenu.style.display = 'none';
+            if (floatingBtn) floatingBtn.style.display = 'block';
+        }
+        
+        autoPlayTimer = setInterval(() => {
+            if (typeof visitNextPerson === 'function') {
+                visitNextPerson();
+            }
+        }, 1500); // 3 giây chuyển 1 lần
+    }
+}
+
+function toggleAutoPlay_Old() {
+    const btn = document.getElementById('autoPlayBtn');
     
     if (autoPlayTimer) {
         // Đang chạy thì bấm để DỪNG
@@ -1040,6 +1077,9 @@ resize();
 resetZoom();
 updateTree();
 </script>
-
+<!-- Dán nút dừng nổi vào đây (ngay trước thẻ đóng body) -->
+    <button id="floatingStopBtn" onclick="toggleAutoPlay()" style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 12px 20px; font-size: 16px; background: #ff4d4f; color: white; border: none; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer;">
+        ⏹️ Dừng lại
+    </button>
 </body>
 </html>
