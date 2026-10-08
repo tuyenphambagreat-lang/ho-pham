@@ -185,11 +185,14 @@
         <datalist id="personList"></datalist>
         <button onclick="searchPerson()" style="margin-left: 4px;">Tìm</button>		
     </div>
-	<div class="search-box">
-       <button id="toggleLinesBtn" onclick="toggleAllLines()" class="active">Tắt đường dóng</button>
-	   <button id="autoPlayBtn" onclick="toggleAutoPlay()">▶️ Auto Run</button>
+	<div class="search-box">       
+	   <button id="autoPlayBtn" onclick="toggleAutoPlay()">▶️ Tự động chạy</button>
+    </div>	
+	<div class="search-box">       	   
+	   <button onclick="resetView()">🎯 Chuẩn</button>
+	   <button id="toggleLinesBtn" onclick="toggleAllLines()" class="active">Tắt đường dóng</button>
     </div>		
-    <button onclick="resetZoom()">Góc nhìn chuẩn</button>    
+        
 	<div class="search-box">
        <button onclick="expandAll()">Mở tất cả</button>
 		<button onclick="collapseAll()">Thu gọn</button>
@@ -269,11 +272,11 @@ function toggleAutoPlay() {
         // Đang chạy thì bấm để DỪNG
         clearInterval(autoPlayTimer);
         autoPlayTimer = null;
-        btn.innerText = "▶️ Auto Run";
+        btn.innerText = "▶️ Tự động chạy";
         btn.classList.remove('active');
     } else {
         // Đang dừng thì bấm để CHẠY TỰ ĐỘNG
-        btn.innerText = "⏹️ Stop";
+        btn.innerText = "⏹️ Dừng lại";
         btn.classList.add('active');
         
         autoPlayTimer = setInterval(() => {
