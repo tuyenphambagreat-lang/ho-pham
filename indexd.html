@@ -503,14 +503,45 @@ function draw() {
     // 0. VẼ TRỐNG ĐỒNG CỐ ĐỊNH CHÍNH GIỮA MÀN HÌNH TĨNH (KHÔNG CO GIÃN)
     // =========================================================================
     if (bgDrumImg.complete && bgDrumImg.naturalWidth !== 0) {
-        const drumSize = Math.min(width, height) * 0.82; 
-        const drumX = (width - drumSize) / 2;
-        const drumY = (height - drumSize) / 2;
+        <!-- const drumSize = Math.min(width, height) * 0.82;  -->
+        <!-- const drumX = (width - drumSize) / 2; -->
+        <!-- const drumY = (height - drumSize) / 2; -->
 
-        ctx.save();
-        ctx.globalAlpha = 0.065; 
-        ctx.drawImage(bgDrumImg, drumX, drumY, drumSize, drumSize);
-        ctx.restore();
+        <!-- ctx.save(); -->
+        <!-- ctx.globalAlpha = 0.165;  -->
+        <!-- ctx.drawImage(bgDrumImg, drumX, drumY, drumSize, drumSize); -->
+        <!-- ctx.restore(); -->
+		// Lấy cạnh nhỏ nhất của màn hình (hoặc canvas) để làm chuẩn hình vuông
+		
+		const imgWidth = bgDrumImg.naturalWidth;
+		const imgHeight = bgDrumImg.naturalHeight;
+		
+		// Lấy kích thước nhỏ nhất của màn hình làm chuẩn để không bao giờ bị tràn khung
+		const baseSize = Math.min(width, height) * 1.8;
+		
+		let drawWidth, drawHeight;
+		
+		if (imgWidth > imgHeight) {
+			// Ảnh chữ nhật ngang
+			drawWidth = baseSize;
+			drawHeight = baseSize * (imgHeight / imgWidth);
+		} else if (imgWidth < imgHeight) {
+			// Ảnh chữ nhật dọc
+			drawHeight = baseSize;
+			drawWidth = baseSize * (imgWidth / imgHeight);
+		} else {
+			// Ảnh vuông chuẩn 1:1
+			drawWidth = baseSize;
+			drawHeight = baseSize;
+		}
+		
+		const drumX = (width - drawWidth) / 2;
+		const drumY = (height - drawHeight) / 2;
+
+		ctx.save();
+		ctx.globalAlpha = 0.096; 
+		ctx.drawImage(bgDrumImg, drumX, drumY, drawWidth, drawHeight);
+		ctx.restore();
     }
 
     // =========================================================================
