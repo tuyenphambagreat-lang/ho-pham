@@ -35,7 +35,11 @@
         }
         #controls button:hover { background: #f1f5f9; border-color: #94a3b8; }
         #controls button.active { background: #991b1b; color: #fff; border-color: #991b1b; }
-
+		#controls button:not(.active) {
+			background: #f1f5f9; 
+			color: #475569;
+			border-color: #cbd5e1;
+		}
         .search-box {
             position: relative;
             display: flex;
@@ -181,7 +185,7 @@
         <datalist id="personList"></datalist>
         <button onclick="searchPerson()" style="margin-left: 4px;">Tìm</button>		
     </div>
-	<button id="toggleLinesBtn" onclick="toggleAllLines()">Bật/Tắt đường dóng</button>
+	<button id="toggleLinesBtn" onclick="toggleAllLines()" class="active">Tắt đường dóng</button>
     <button onclick="resetZoom()">Góc nhìn chuẩn</button>    
 	<div class="search-box">
        <button onclick="expandAll()">Mở tất cả</button>
@@ -194,7 +198,7 @@
     </div>
 
     <div class="legend">
-        <div class="legend-item"><span class="dot" style="background:#2563eb"></span> Sống</div>
+        <div class="legend-item"><span class="dot" style="background:#2563eb"></span> Còn sống</div>
         <div class="legend-item"><span class="ribbon-icon"></span> Đã mất</div>
     </div>
 </div>
@@ -921,6 +925,25 @@ canvas.addEventListener('click', (e) => {
 
 let allLinesActive = true;
 function toggleAllLines() {
+    allLinesActive = !allLinesActive;
+    const maxDepth = d3.max(root.descendants(), d => d.depth);
+    for (let i = 0; i <= maxDepth; i++) {
+        activeLines[i] = allLinesActive;
+    }
+    
+    const btn = document.getElementById('toggleLinesBtn');
+    if (allLinesActive) {
+        btn.innerText = "Tắt đường dóng";
+        btn.classList.add('active');
+    } else {
+        btn.innerText = "Bật đường dóng";
+        btn.classList.remove('active');
+    }
+    
+    draw();
+}
+
+function toggleAllLinesBK() {
     allLinesActive = !allLinesActive;
     const maxDepth = d3.max(root.descendants(), d => d.depth);
     for (let i = 0; i <= maxDepth; i++) {
