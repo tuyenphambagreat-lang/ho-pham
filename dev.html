@@ -186,7 +186,7 @@
         <button onclick="searchPerson()" style="margin-left: 4px;">Tìm</button>		
     </div>
 	<div class="search-box">       
-	   <button id="autoPlayBtn" onclick="toggleAutoPlay()">▶️ Tự động chạy</button>
+	   <button id="autoPlayBtn" onclick="toggleAutoPlay()">▶️ Tự động duyệt</button>
     </div>	
 	<div class="search-box">       	   
 	   <button onclick="resetZoom()">🎯 Chuẩn</button>
@@ -194,13 +194,13 @@
     </div>		
         
 	<div class="search-box">
-       <button onclick="expandAll()">Mở tất cả</button>
-		<button onclick="collapseAll()">Thu gọn</button>
+       <button onclick="expandAll()">➕ Mở rộng</button>
+		<button onclick="collapseAll()">➖ Thu gọn</button>
     </div>	
         
 	<div class="search-box">
-		<button id="btnVisit" onclick="visitNextPerson()">Duyệt đời</button>
-		<button id="btnResetVisit" onclick="resetVisit()">Về Cụ Tổ</button>
+		<button id="btnVisit" onclick="visitNextPerson()">👉 Duyệt đời</button>
+		<button id="btnResetVisit" onclick="resetVisit()">👑 Về Cụ Tổ</button>
     </div>
 
     <div class="legend">
@@ -272,7 +272,7 @@ function toggleAutoPlay() {
         // Đang chạy thì bấm để DỪNG
         clearInterval(autoPlayTimer);
         autoPlayTimer = null;
-        btn.innerText = "▶️ Tự động chạy";
+        btn.innerText = "▶️ Tự động duyệt";
         btn.classList.remove('active');
     } else {
         // Đang dừng thì bấm để CHẠY TỰ ĐỘNG
