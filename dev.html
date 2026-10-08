@@ -190,7 +190,7 @@
     </div>	
 	<div class="search-box">       	   
 	   <button onclick="resetView()">🎯 Chuẩn</button>
-	   <button id="toggleLinesBtn" onclick="toggleAllLines()" class="active">Tắt đường dóng</button>
+	   <button id="toggleLinesBtn" onclick="toggleAllLines()" class="active">Dóng hàng ✕</button>
     </div>		
         
 	<div class="search-box">
@@ -962,10 +962,10 @@ function toggleAllLines() {
     
     const btn = document.getElementById('toggleLinesBtn');
     if (allLinesActive) {
-        btn.innerText = "Tắt đường dóng";
+        btn.innerText = "Dóng hàng ✕";
         btn.classList.add('active');
     } else {
-        btn.innerText = "Bật đường dóng";
+        btn.innerText = "Dóng hàng ✓";
         btn.classList.remove('active');
     }
     
