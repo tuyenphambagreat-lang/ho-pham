@@ -251,6 +251,20 @@ let branchFlashAlpha = 0;
 let animFrameId = null;
 let activeBranchIds = new Set();
 
+function getSubtreeIds(rootNode, targetIds = []) {
+    const ids = new Set();
+    const targets = Array.isArray(targetIds) ? targetIds : [targetIds];
+
+    targets.forEach(targetId => {
+        const target = rootNode.descendants().find(d => d.id === targetId);
+        if (target) {
+            target.descendants().forEach(d => ids.add(d.id));
+        }
+    });
+
+    return ids;
+}
+
 let autoPlayTimer = null;
 
 function toggleAutoPlay() {
@@ -274,6 +288,18 @@ function toggleAutoPlay() {
             if (typeof visitNextPerson === 'function') visitNextPerson();
         }, 1500);
     }
+}
+
+function startBranchFlashing() {
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+    let angle = 0;
+    function renderLoop() {
+        angle = (angle + 0.08) % (Math.PI * 2);
+        branchFlashAlpha = (Math.sin(angle) + 1) / 2;
+        draw();
+        animFrameId = requestAnimationFrame(renderLoop);
+    }
+    renderLoop();
 }
 
 function initVisitList() {
@@ -416,6 +442,14 @@ function updateTree() {
         if (activeLines[i] === undefined) activeLines[i] = true;
     }
 
+    // Khởi tạo lại hiệu ứng nhấp nháy nhánh đặc biệt
+    const keysToFlash = ["ngan"]; 
+    activeBranchIds = getSubtreeIds(root, keysToFlash);
+    activeBranchIds.add("thanh_d5");
+    activeBranchIds.add("vinh");
+    activeBranchIds.add("huy");
+
+    startBranchFlashing();
     draw();
 }
 
@@ -466,12 +500,19 @@ function draw() {
             highlightedIds.has(link.source.id) && 
             highlightedIds.has(link.target.id);
 
+        const isBranchLink = activeBranchIds.has(link.source.id) && activeBranchIds.has(link.target.id);
         const targetGenColor = getGenColor(link.target.depth);
 
         ctx.beginPath();
-        ctx.strokeStyle = isHighlighted ? "#2563eb" : targetGenColor.stroke;
-        ctx.globalAlpha = isHighlighted ? 1 : 0.65;
-        ctx.lineWidth = isHighlighted ? 2.2 : 1.2;
+
+        if (isBranchLink) {
+            ctx.strokeStyle = `rgba(2, 132, 199, ${0.4 + branchFlashAlpha * 0.6})`;
+            ctx.lineWidth = 1.8 + branchFlashAlpha * 1.5;
+        } else {
+            ctx.strokeStyle = isHighlighted ? "#2563eb" : targetGenColor.stroke;
+            ctx.globalAlpha = isHighlighted ? 1 : 0.65;
+            ctx.lineWidth = isHighlighted ? 2.2 : 1.2;
+        }
 
         const sourceX = link.source.x;
         const sourceY = link.source.y + nodeHeight / 2;
@@ -502,6 +543,7 @@ function draw() {
         const genColor = getGenColor(d.depth);
         const isHighlighted = !hoveredNode || highlightedIds.has(d.id);
         const opacity = isHighlighted ? 1 : 0.4;
+        const isBranchNode = activeBranchIds.has(d.id);
 
         ctx.save();
         ctx.globalAlpha = opacity;
@@ -524,14 +566,27 @@ function draw() {
             ctx.lineWidth = 2;
         } else {
             ctx.fillStyle = isAlive ? genColor.bg : "#f1f5f9";
-            ctx.strokeStyle = isAlive ? genColor.stroke : "#64748b";
-            ctx.lineWidth = 1.5;
+            if (isBranchNode) {
+                ctx.strokeStyle = `rgba(2, 132, 199, ${0.4 + branchFlashAlpha * 0.6})`;
+                ctx.lineWidth = 2 + branchFlashAlpha * 1.5;
+            } else {
+                ctx.strokeStyle = isAlive ? genColor.stroke : "#64748b";
+                ctx.lineWidth = 1.5;
+            }
         }
 
         ctx.beginPath();
         ctx.roundRect(x, y, currentWidth, currentHeight, isRootNode ? 10 : 6);
         ctx.fill();
         ctx.stroke();
+
+        if (isBranchNode && !isRootNode) {
+            ctx.beginPath();
+            ctx.roundRect(x - 2, y - 2, currentWidth + 4, currentHeight + 4, 8);
+            ctx.strokeStyle = `rgba(56, 189, 248, ${branchFlashAlpha * 0.8})`;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
 
         ctx.fillStyle = isRootNode ? "#fbbf24" : genColor.main;
         ctx.beginPath();
@@ -596,7 +651,7 @@ function draw() {
             ctx.font = "500 10px 'Segoe UI', Arial, sans-serif";
             ctx.fillText(d.data.orderText || "", textX, y + 37);
 
-            // 🌿 VẼ BIỂU TƯỢNG LÁ CÂY TRỰC TIẾP KHÔNG CÓ NỀN XANH
+            // 🌿 BIỂU TƯỢNG LÁ CÂY KHÔNG NỀN
             const iconX = x + currentWidth - 14;
             const iconY = y + currentHeight - 12;
 
@@ -846,7 +901,6 @@ canvas.addEventListener('mousemove', (e) => {
         const y = d.y - h / 2;
 
         if (!isRootNode) {
-            // Vùng nhận diện click quanh biểu tượng lá cây (tạo box rộng khoảng 24x24 cho dễ bấm)
             const iconAreaX = x + w - 24;
             const iconAreaY = y + h - 24;
             if (worldX >= iconAreaX && worldX <= x + w && worldY >= iconAreaY && worldY <= y + h) {
@@ -949,7 +1003,7 @@ canvas.addEventListener('click', (e) => {
     if (clickedBranchBtnId) {
         focusOnBranch(clickedBranchBtnId);
     } else if (clickedNode && !clickedToggleBtn) {
-        //showModal(clickedNode.data);
+        showModal(clickedNode.data);
     }
 });
 
