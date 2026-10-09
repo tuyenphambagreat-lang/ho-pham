@@ -302,27 +302,32 @@ function startBranchFlashing() {
     renderLoop();
 }
 
+<!-- function initVisitList() { -->
+  <!-- if (!flatData || flatData.length === 0) return; -->
+  <!-- const rootNode = flatData.find(d => !d.parent); -->
+  <!-- if (!rootNode) return; -->
+
+  <!-- const childrenMap = new Map(); -->
+  <!-- flatData.forEach(item => { -->
+    <!-- if (item.parent) { -->
+      <!-- if (!childrenMap.has(item.parent)) childrenMap.set(item.parent, []); -->
+      <!-- childrenMap.get(item.parent).push(item); -->
+    <!-- } -->
+  <!-- }); -->
+
+  <!-- visitList = []; -->
+  <!-- const queue = [rootNode]; -->
+  <!-- while (queue.length > 0) { -->
+    <!-- const current = queue.shift(); -->
+    <!-- visitList.push(current); -->
+    <!-- const children = childrenMap.get(current.id) || []; -->
+    <!-- children.forEach(child => queue.push(child)); -->
+  <!-- } -->
+<!-- } -->
 function initVisitList() {
-  if (!flatData || flatData.length === 0) return;
-  const rootNode = flatData.find(d => !d.parent);
-  if (!rootNode) return;
-
-  const childrenMap = new Map();
-  flatData.forEach(item => {
-    if (item.parent) {
-      if (!childrenMap.has(item.parent)) childrenMap.set(item.parent, []);
-      childrenMap.get(item.parent).push(item);
-    }
-  });
-
-  visitList = [];
-  const queue = [rootNode];
-  while (queue.length > 0) {
-    const current = queue.shift();
-    visitList.push(current);
-    const children = childrenMap.get(current.id) || [];
-    children.forEach(child => queue.push(child));
-  }
+  if (!root) return;
+  // Lấy trực tiếp danh sách các node đang hiện (được expand) trên cây
+  visitList = root.descendants();
 }
 
 function visitNextPerson() {
