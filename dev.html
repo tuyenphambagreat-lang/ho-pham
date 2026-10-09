@@ -227,6 +227,7 @@
                     <div><strong>Năm sinh - Mất:</strong> <span id="modalYears">--</span></div>
                 </div>
             </div>
+
             <div class="bio-title">Tiểu sử & Ghi chú:</div>
             <div class="info-group" id="modalBio" style="white-space: pre-line; background: #f8fafc; padding: 10px; border-radius: 6px; border:1px solid #e2e8f0;">--</div>
 
@@ -235,8 +236,9 @@
         </div>
     </div>
 </div>
+
 <script src="data.js"></script>
-<script src="drumImage.js"></script> <!-- Thêm dòng này -->
+<script src="drumImage.js"></script>
 <script>
 const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/847/847969.png";
 const bgDrumImg = new Image();
@@ -249,97 +251,33 @@ let branchFlashAlpha = 0;
 let animFrameId = null;
 let activeBranchIds = new Set();
 
-function getSubtreeIds(rootNode, targetIds = []) {
-    const ids = new Set();
-    const targets = Array.isArray(targetIds) ? targetIds : [targetIds];
-
-    targets.forEach(targetId => {
-        const target = rootNode.descendants().find(d => d.id === targetId);
-        if (target) {
-            target.descendants().forEach(d => ids.add(d.id));
-        }
-    });
-
-    return ids;
-}
-
 let autoPlayTimer = null;
 
 function toggleAutoPlay() {
     const btn = document.getElementById('autoPlayBtn');
     const floatingBtn = document.getElementById('floatingStopBtn');
-    const controlsMenu = document.getElementById('controls'); // Thay thế bằng ID thanh menu của bạn nếu khác
+    const controlsMenu = document.getElementById('controls');
     
     if (autoPlayTimer) {
-        // === ĐANG DỪNG LẠI ===
         clearInterval(autoPlayTimer);
         autoPlayTimer = null;
-        
-        // Đổi tên nút chính
-        if (btn) btn.innerText = "▶️ Tự động chạy";
-        if (btn) btn.classList.remove('active');
-        
-        // Ẩn nút dừng nổi, hiện lại menu chính
+        if (btn) { btn.innerText = "▶️ Tự động chạy"; btn.classList.remove('active'); }
         if (floatingBtn) floatingBtn.style.display = 'none';
-        if (controlsMenu) controlsMenu.style.display = 'flex'; // Hoặc block tùy CSS của bạn
-        
+        if (controlsMenu) controlsMenu.style.display = 'flex';
     } else {
-        // === BẮT ĐẦU CHẠY TỰ ĐỘNG ===
-        if (btn) btn.innerText = "⏹️ Dừng lại";
-        if (btn) btn.classList.add('active');
-        
-        // Nếu là mobile (màn hình nhỏ <= 768px), ẩn menu chính đi cho thoáng và hiện nút nổi
+        if (btn) { btn.innerText = "⏹️ Dừng lại"; btn.classList.add('active'); }
         if (window.innerWidth <= 768) {
             if (controlsMenu) controlsMenu.style.display = 'none';
             if (floatingBtn) floatingBtn.style.display = 'block';
         }
-        
         autoPlayTimer = setInterval(() => {
-            if (typeof visitNextPerson === 'function') {
-                visitNextPerson();
-            }
-        }, 1500); // 3 giây chuyển 1 lần
+            if (typeof visitNextPerson === 'function') visitNextPerson();
+        }, 1500);
     }
-}
-
-function toggleAutoPlay_Old() {
-    const btn = document.getElementById('autoPlayBtn');
-    
-    if (autoPlayTimer) {
-        // Đang chạy thì bấm để DỪNG
-        clearInterval(autoPlayTimer);
-        autoPlayTimer = null;
-        btn.innerText = "▶️ Tự động duyệt";
-        btn.classList.remove('active');
-    } else {
-        // Đang dừng thì bấm để CHẠY TỰ ĐỘNG
-        btn.innerText = "⏹️ Dừng lại";
-        btn.classList.add('active');
-        
-        autoPlayTimer = setInterval(() => {
-            if (typeof visitNextPerson === 'function') {
-                visitNextPerson();
-            }
-        }, 1500); // 3000ms = 3 giây. Nếu muốn 5 giây thì bạn đổi thành 5000 nhé!
-    }
-}
-
-function startBranchFlashing() {
-    if (animFrameId) cancelAnimationFrame(animFrameId);
-    let angle = 0;
-
-    function renderLoop() {
-        angle = (angle + 0.08) % (Math.PI * 2);
-        branchFlashAlpha = (Math.sin(angle) + 1) / 2;
-        draw();
-        animFrameId = requestAnimationFrame(renderLoop);
-    }
-    renderLoop();
 }
 
 function initVisitList() {
   if (!flatData || flatData.length === 0) return;
-
   const rootNode = flatData.find(d => !d.parent);
   if (!rootNode) return;
 
@@ -353,11 +291,9 @@ function initVisitList() {
 
   visitList = [];
   const queue = [rootNode];
-
   while (queue.length > 0) {
     const current = queue.shift();
     visitList.push(current);
-
     const children = childrenMap.get(current.id) || [];
     children.forEach(child => queue.push(child));
   }
@@ -480,13 +416,6 @@ function updateTree() {
         if (activeLines[i] === undefined) activeLines[i] = true;
     }
 
-    const keysToFlash = ["ngan"]; 
-    activeBranchIds = getSubtreeIds(root, keysToFlash);
-    activeBranchIds.add("thanh_d5");
-	activeBranchIds.add("vinh");
-	activeBranchIds.add("huy");	
-	
-    startBranchFlashing();
     draw();
 }
 
@@ -500,38 +429,20 @@ function draw() {
         hoveredNode.descendants().forEach(desc => highlightedIds.add(desc.id));
     }
 
-    // =========================================================================
-    // 0. VẼ TRỐNG ĐỒNG CỐ ĐỊNH CHÍNH GIỮA MÀN HÌNH TĨNH (KHÔNG CO GIÃN)
-    // =========================================================================
+    // Vẽ trống đồng nền
     if (bgDrumImg.complete && bgDrumImg.naturalWidth !== 0) {
-        <!-- const drumSize = Math.min(width, height) * 0.82;  -->
-        <!-- const drumX = (width - drumSize) / 2; -->
-        <!-- const drumY = (height - drumSize) / 2; -->
-
-        <!-- ctx.save(); -->
-        <!-- ctx.globalAlpha = 0.165;  -->
-        <!-- ctx.drawImage(bgDrumImg, drumX, drumY, drumSize, drumSize); -->
-        <!-- ctx.restore(); -->
-		// Lấy cạnh nhỏ nhất của màn hình (hoặc canvas) để làm chuẩn hình vuông
-		
 		const imgWidth = bgDrumImg.naturalWidth;
 		const imgHeight = bgDrumImg.naturalHeight;
-		
-		// Lấy kích thước nhỏ nhất của màn hình làm chuẩn để không bao giờ bị tràn khung
 		const baseSize = Math.min(width, height) * 1.8;
 		
 		let drawWidth, drawHeight;
-		
 		if (imgWidth > imgHeight) {
-			// Ảnh chữ nhật ngang
 			drawWidth = baseSize;
 			drawHeight = baseSize * (imgHeight / imgWidth);
 		} else if (imgWidth < imgHeight) {
-			// Ảnh chữ nhật dọc
 			drawHeight = baseSize;
 			drawWidth = baseSize * (imgWidth / imgHeight);
 		} else {
-			// Ảnh vuông chuẩn 1:1
 			drawWidth = baseSize;
 			drawHeight = baseSize;
 		}
@@ -545,32 +456,22 @@ function draw() {
 		ctx.restore();
     }
 
-    // =========================================================================
-    // A. VẼ CÂY GIA PHẢ (BIẾN ĐỔI THEO ZOOM / PAN)
-    // =========================================================================
     ctx.save();
     ctx.translate(transform.x, transform.y);
     ctx.scale(transform.k, transform.k);
 
-    // 1. VẼ ĐƯỜNG NỐI CHA - CON
+    // 1. Vẽ đường nối
     root.links().forEach(link => {
         const isHighlighted = hoveredNode && 
             highlightedIds.has(link.source.id) && 
             highlightedIds.has(link.target.id);
 
-        const isBranchLink = activeBranchIds.has(link.source.id) && activeBranchIds.has(link.target.id);
         const targetGenColor = getGenColor(link.target.depth);
 
         ctx.beginPath();
-
-        if (isBranchLink) {
-            ctx.strokeStyle = `rgba(2, 132, 199, ${0.4 + branchFlashAlpha * 0.6})`;
-            ctx.lineWidth = 1.8 + branchFlashAlpha * 1.5;
-        } else {
-            ctx.strokeStyle = isHighlighted ? "#2563eb" : targetGenColor.stroke;
-            ctx.globalAlpha = isHighlighted ? 1 : 0.65;
-            ctx.lineWidth = isHighlighted ? 2.2 : 1.2;
-        }
+        ctx.strokeStyle = isHighlighted ? "#2563eb" : targetGenColor.stroke;
+        ctx.globalAlpha = isHighlighted ? 1 : 0.65;
+        ctx.lineWidth = isHighlighted ? 2.2 : 1.2;
 
         const sourceX = link.source.x;
         const sourceY = link.source.y + nodeHeight / 2;
@@ -586,12 +487,11 @@ function draw() {
         ctx.globalAlpha = 1.0;
     });
 
-    // 2. VẼ THẺ CÁ NHÂN
+    // 2. Vẽ thẻ cá nhân
     root.descendants().forEach(d => {
         if (isNaN(d.x) || isNaN(d.y)) return;
 
         const isRootNode = (d.depth === 0);
-        
         const currentWidth = isRootNode ? 185 : nodeWidth;
         const currentHeight = isRootNode ? 68 : nodeHeight;
 
@@ -600,10 +500,8 @@ function draw() {
 
         const isAlive = d.data.isAlive !== false;
         const genColor = getGenColor(d.depth);
-
         const isHighlighted = !hoveredNode || highlightedIds.has(d.id);
         const opacity = isHighlighted ? 1 : 0.4;
-        const isBranchNode = activeBranchIds.has(d.id);
 
         ctx.save();
         ctx.globalAlpha = opacity;
@@ -626,27 +524,14 @@ function draw() {
             ctx.lineWidth = 2;
         } else {
             ctx.fillStyle = isAlive ? genColor.bg : "#f1f5f9";
-            if (isBranchNode) {
-                ctx.strokeStyle = `rgba(2, 132, 199, ${0.4 + branchFlashAlpha * 0.6})`;
-                ctx.lineWidth = 2 + branchFlashAlpha * 1.5;
-            } else {
-                ctx.strokeStyle = isAlive ? genColor.stroke : "#64748b";
-                ctx.lineWidth = 1.5;
-            }
+            ctx.strokeStyle = isAlive ? genColor.stroke : "#64748b";
+            ctx.lineWidth = 1.5;
         }
 
         ctx.beginPath();
         ctx.roundRect(x, y, currentWidth, currentHeight, isRootNode ? 10 : 6);
         ctx.fill();
         ctx.stroke();
-
-        if (isBranchNode && !isRootNode) {
-            ctx.beginPath();
-            ctx.roundRect(x - 2, y - 2, currentWidth + 4, currentHeight + 4, 8);
-            ctx.strokeStyle = `rgba(56, 189, 248, ${branchFlashAlpha * 0.8})`;
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-        }
 
         ctx.fillStyle = isRootNode ? "#fbbf24" : genColor.main;
         ctx.beginPath();
@@ -658,7 +543,6 @@ function draw() {
             ctx.beginPath();
             ctx.roundRect(x, y, currentWidth, currentHeight, 6);
             ctx.clip();
-
             ctx.beginPath();
             ctx.moveTo(x + currentWidth - 18, y);
             ctx.lineTo(x + currentWidth, y);
@@ -700,7 +584,6 @@ function draw() {
             ctx.fillStyle = "#fef08a";
             ctx.font = "bold 14px 'Segoe UI', Tahoma, Arial, sans-serif";
             ctx.fillText(d.data.name, textX, y + 28);
-
             ctx.fillStyle = "#fde047";
             ctx.font = "bold 11px 'Segoe UI', Tahoma, Arial, sans-serif";
             ctx.fillText("👑 " + (d.data.orderText || "Cụ Thủy Tổ"), textX, y + 48);
@@ -712,9 +595,20 @@ function draw() {
             ctx.fillStyle = genColor.main;
             ctx.font = "500 10px 'Segoe UI', Arial, sans-serif";
             ctx.fillText(d.data.orderText || "", textX, y + 37);
+
+            // 🌿 VẼ BIỂU TƯỢNG LÁ CÂY TRỰC TIẾP KHÔNG CÓ NỀN XANH
+            const iconX = x + currentWidth - 14;
+            const iconY = y + currentHeight - 12;
+
+            ctx.save();
+            ctx.font = "13px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("🌿", iconX, iconY);
+            ctx.restore();
         }
 
-        // Vẽ nút cộng/trừ nếu node có con hoặc đang bị ẩn con
+        // Nút mở/đóng con cháu ở dưới đáy thẻ
         if (d.children || d._children) {
             const btnX = d.x;
             const btnY = y + currentHeight;
@@ -734,7 +628,6 @@ function draw() {
             ctx.font = "bold 11px Arial";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            // Nếu có _children nghĩa là đang thu gọn -> hiển thị dấu "+", ngược lại hiển thị dấu "-"
             const symbol = d._children ? "+" : "-";
             ctx.fillText(symbol, btnX, btnY);
             ctx.restore();
@@ -745,9 +638,7 @@ function draw() {
 
     ctx.restore();
 
-    // =========================================================================
-    // B. VẼ TRỤC ĐỜI CỐ ĐỊNH BÊN TRÁI MÀN HÌNH
-    // =========================================================================
+    // 3. Trục đời bên trái
     for (let depth = 0; depth <= maxDepth; depth++) {
         const lineY = transform.applyY(depth * levelHeight);
         const isLineActive = !!activeLines[depth];
@@ -781,9 +672,8 @@ function draw() {
     }
 
     ctx.beginPath();
-    ctx.strokeStyle = "#78350f";
-	//ctx.strokeStyle = "rgba(120, 53, 15, 0.3);"; // Số 0.3 chỉnh độ mờ (càng nhỏ càng mờ)
-    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = "rgba(120, 53, 15, 0.2)";
+    ctx.lineWidth = 0.8;
     ctx.moveTo(80, 0);
     ctx.lineTo(80, height);
     ctx.stroke();
@@ -795,7 +685,6 @@ function toggleMobileToolbar(event) {
     event.stopPropagation();
     const toolbar = document.getElementById("controls");
     const icon = document.getElementById("toggleIcon");
-
     const isHidden = toolbar.classList.toggle("hidden-mobile");
     icon.textContent = isHidden ? "⚙️" : "✖️";
 }
@@ -803,29 +692,19 @@ function toggleMobileToolbar(event) {
 document.addEventListener("click", function(event) {
     const toolbar = document.getElementById("controls");
     const toggleBtn = document.getElementById("toolbarToggleBtn");
-
     if (window.innerWidth <= 768 && !toolbar.contains(event.target) && !toggleBtn.contains(event.target)) {
         toolbar.classList.add("hidden-mobile");
         document.getElementById("toggleIcon").textContent = "⚙️";
     }
 });
 
-function collapseAll() {
-    root.children.forEach(collapse);
-    updateTree();
-	resetZoom();
-}
-
+function collapseAll() { root.children.forEach(collapse); updateTree(); resetZoom(); }
 function expandAll() {
     root.descendants().forEach(d => {
-        if (d._children) {
-            d.children = d._children;
-            d._children = null;
-        }
+        if (d._children) { d.children = d._children; d._children = null; }
     });
     updateTree();
 }
-
 function collapse(d) {
     if (d.children) {
         d._children = d.children;
@@ -834,19 +713,58 @@ function collapse(d) {
     }
 }
 
-function searchPerson() {
-    const query = document.getElementById('searchInput').value.trim().toLowerCase();
-    if (!query) {
-        currentSearchIndex = -1;
-        return;
+function focusOnBranch(nodeId) {
+    const targetNode = root.descendants().find(d => d.id === nodeId);
+    if (!targetNode) return;
+
+    if (root.children) root.children.forEach(collapse);
+
+    let current = targetNode;
+    const lineage = [];
+    while (current) {
+        lineage.unshift(current);
+        current = current.parent;
     }
 
-    const matchedDataList = flatData.filter(d => d.name.toLowerCase().includes(query));
-    if (matchedDataList.length === 0) {
-        alert("Không tìm thấy người có tên: " + query);
-        currentSearchIndex = -1;
-        return;
+    for (let i = 0; i < lineage.length - 1; i++) {
+        const parentNode = lineage[i];
+        const childNodeToKeep = lineage[i + 1];
+
+        if (parentNode._children) {
+            parentNode.children = parentNode._children;
+            parentNode._children = null;
+        }
+
+        if (parentNode.children) {
+            parentNode.children.forEach(child => {
+                if (child.id !== childNodeToKeep.id) {
+                    if (child.children) {
+                        child._children = child.children;
+                        child.children = null;
+                    }
+                }
+            });
+        }
     }
+
+    function expandAllDescendants(d) {
+        if (d._children) { d.children = d._children; d._children = null; }
+        if (d.children) d.children.forEach(expandAllDescendants);
+    }
+    expandAllDescendants(targetNode);
+
+    updateTree();
+    searchedNode = targetNode;
+    focusOnNode(targetNode);
+    startFlashing();
+}
+
+function searchPerson() {
+    const query = document.getElementById('searchInput').value.trim().toLowerCase();
+    if (!query) { currentSearchIndex = -1; return; }
+
+    const matchedDataList = flatData.filter(d => d.name.toLowerCase().includes(query));
+    if (matchedDataList.length === 0) { alert("Không tìm thấy người có tên: " + query); return; }
 
     currentSearchIndex = (currentSearchIndex + 1) % matchedDataList.length;
     const targetNodeData = matchedDataList[currentSearchIndex];
@@ -869,7 +787,6 @@ function expandPathToNode(nodeId) {
         ancestors.push(current.parent);
         current = flatData.find(d => d.id === current.parent);
     }
-
     root.descendants().forEach(d => {
         if (ancestors.includes(d.id) && d._children) {
             d.children = d._children;
@@ -882,7 +799,6 @@ function focusOnNode(node) {
     const scale = 1.3; 
     const x = width / 2 - node.x * scale;
     const y = height / 2 - node.y * scale;
-
     d3.select(canvas).transition().duration(750)
         .call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(scale));
 }
@@ -910,14 +826,12 @@ canvas.addEventListener('mousemove', (e) => {
     const maxDepth = d3.max(root.descendants(), d => d.depth);
     let hoveredDepth = null;
     let newlyHoveredNode = null;
+    let isOverBranchBtn = false;
 
     if (mouseX >= 8 && mouseX <= 72) {
         for (let depth = 0; depth <= maxDepth; depth++) {
             const lineY = transform.applyY(depth * levelHeight);
-            if (Math.abs(mouseY - lineY) <= 12) {
-                hoveredDepth = depth;
-                break;
-            }
+            if (Math.abs(mouseY - lineY) <= 12) { hoveredDepth = depth; break; }
         }
     }
 
@@ -928,9 +842,18 @@ canvas.addEventListener('mousemove', (e) => {
         const isRootNode = (d.depth === 0);
         const w = isRootNode ? 185 : nodeWidth;
         const h = isRootNode ? 68 : nodeHeight;
-
         const x = d.x - w / 2;
         const y = d.y - h / 2;
+
+        if (!isRootNode) {
+            // Vùng nhận diện click quanh biểu tượng lá cây (tạo box rộng khoảng 24x24 cho dễ bấm)
+            const iconAreaX = x + w - 24;
+            const iconAreaY = y + h - 24;
+            if (worldX >= iconAreaX && worldX <= x + w && worldY >= iconAreaY && worldY <= y + h) {
+                isOverBranchBtn = true;
+            }
+        }
+
         if (worldX >= x && worldX <= x + w && worldY >= y && worldY <= y + h) {
             newlyHoveredNode = d;
         }
@@ -941,7 +864,13 @@ canvas.addEventListener('mousemove', (e) => {
         draw();
     }
 
-    if (hoveredNode) {
+    if (isOverBranchBtn) {
+        canvas.style.cursor = 'pointer';
+        tooltip.style.display = 'block';
+        tooltip.style.left = `${e.clientX}px`;
+        tooltip.style.top = `${e.clientY}px`;
+        tooltip.innerHTML = `🌿 Click để xem cô đọng nhánh này`;
+    } else if (hoveredNode) {
         canvas.style.cursor = 'pointer';
         tooltip.style.display = 'block';
         tooltip.style.left = `${e.clientX}px`;
@@ -954,8 +883,7 @@ canvas.addEventListener('mousemove', (e) => {
         tooltip.style.display = 'block';
         tooltip.style.left = `${e.clientX}px`;
         tooltip.style.top = `${e.clientY}px`;
-        const stateText = activeLines[hoveredDepth] ? 'Click để Ẩn đường dóng' : 'Click để Bật đường dóng';
-        tooltip.innerHTML = `Đang dóng dòng: <b>ĐỜI ${romanNumeral[hoveredDepth]}</b><br><small style="color:#cbd5e1">${stateText}</small>`;
+        tooltip.innerHTML = `Đang dóng dòng: <b>ĐỜI ${romanNumeral[hoveredDepth]}</b>`;
     } else {
         canvas.style.cursor = 'default';
         tooltip.style.display = 'none';
@@ -984,41 +912,44 @@ canvas.addEventListener('click', (e) => {
     const worldY = (mouseY - transform.y) / transform.k;
 
     let clickedNode = null;
+    let clickedBranchBtnId = null;
     let clickedToggleBtn = false;
 
     root.descendants().forEach(d => {
         const isRootNode = (d.depth === 0);
         const w = isRootNode ? 185 : nodeWidth;
         const h = isRootNode ? 68 : nodeHeight;
-
         const x = d.x - w / 2;
         const y = d.y - h / 2;
 
-        // Kiểm tra xem click có nằm vào nút cộng/trừ ở đáy thẻ không
+        if (!isRootNode) {
+            const iconAreaX = x + w - 24;
+            const iconAreaY = y + h - 24;
+            if (worldX >= iconAreaX && worldX <= x + w && worldY >= iconAreaY && worldY <= y + h) {
+                clickedBranchBtnId = d.id;
+            }
+        }
+
         if (d.children || d._children) {
             const btnX = d.x;
             const btnY = y + h;
-            const distance = Math.hypot(worldX - btnX, worldY - btnY);
-            if (distance <= 12) {
+            if (Math.hypot(worldX - btnX, worldY - btnY) <= 12) {
                 clickedToggleBtn = true;
-                if (d.children) {
-                    d._children = d.children;
-                    d.children = null;
-                } else {
-                    d.children = d._children;
-                    d._children = null;
-                }
+                if (d.children) { d._children = d.children; d.children = null; }
+                else { d.children = d._children; d._children = null; }
                 updateTree();
             }
         }
 
-        if (!clickedToggleBtn && worldX >= x && worldX <= x + w && worldY >= y && worldY <= y + h) {
+        if (!clickedToggleBtn && !clickedBranchBtnId && worldX >= x && worldX <= x + w && worldY >= y && worldY <= y + h) {
             clickedNode = d;
         }
     });
 
-    if (clickedNode && !clickedToggleBtn) {
-        //showModal(clickedNode.data);
+    if (clickedBranchBtnId) {
+        focusOnBranch(clickedBranchBtnId);
+    } else if (clickedNode && !clickedToggleBtn) {
+        showModal(clickedNode.data);
     }
 });
 
@@ -1026,29 +957,11 @@ let allLinesActive = true;
 function toggleAllLines() {
     allLinesActive = !allLinesActive;
     const maxDepth = d3.max(root.descendants(), d => d.depth);
-    for (let i = 0; i <= maxDepth; i++) {
-        activeLines[i] = allLinesActive;
-    }
+    for (let i = 0; i <= maxDepth; i++) activeLines[i] = allLinesActive;
     
     const btn = document.getElementById('toggleLinesBtn');
-    if (allLinesActive) {
-        btn.innerText = "Dóng hàng ✕";
-        btn.classList.add('active');
-    } else {
-        btn.innerText = "Dóng hàng ✓";
-        btn.classList.remove('active');
-    }
-    
-    draw();
-}
-
-function toggleAllLinesBK() {
-    allLinesActive = !allLinesActive;
-    const maxDepth = d3.max(root.descendants(), d => d.depth);
-    for (let i = 0; i <= maxDepth; i++) {
-        activeLines[i] = allLinesActive;
-    }
-    document.getElementById('toggleLinesBtn').classList.toggle('active', !allLinesActive);
+    if (allLinesActive) { btn.innerText = "Dóng hàng ✕"; btn.classList.add('active'); }
+    else { btn.innerText = "Dóng hàng ✓"; btn.classList.remove('active'); }
     draw();
 }
 
@@ -1081,13 +994,8 @@ function showModal(data) {
     document.getElementById('infoModal').classList.add('active');
 }
 
-function hideModal() {
-    document.getElementById('infoModal').classList.remove('active');
-}
-
-function closeModal(e) {
-    if (e.target.id === 'infoModal') hideModal();
-}
+function hideModal() { document.getElementById('infoModal').classList.remove('active'); }
+function closeModal(e) { if (e.target.id === 'infoModal') hideModal(); }
 
 const zoom = d3.zoom().scaleExtent([0.1, 3]).on('zoom', (e) => {
     transform = e.transform;
@@ -1102,17 +1010,15 @@ function resetZoom() {
         .call(zoom.transform, d3.zoomIdentity.translate(width / 2 + 30, 120));
 }
 
-document.getElementById('searchInput').addEventListener('input', () => {
-    currentSearchIndex = -1;
-});
+document.getElementById('searchInput').addEventListener('input', () => { currentSearchIndex = -1; });
 
 resize();
 resetZoom();
 updateTree();
 </script>
-<!-- Dán nút dừng nổi vào đây (ngay trước thẻ đóng body) -->
-    <button id="floatingStopBtn" onclick="toggleAutoPlay()" style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 20px; font-size: 16px; background: #ff4d4f; color: white; border: none; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer;">
-        ⏹️ Dừng lại
-    </button>
+
+<button id="floatingStopBtn" onclick="toggleAutoPlay()" style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 20px; font-size: 16px; background: #ff4d4f; color: white; border: none; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer;">
+    ⏹️ Dừng lại
+</button>
 </body>
 </html>
