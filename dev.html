@@ -250,6 +250,7 @@ let currentVisitIndex = -1;
 let branchFlashAlpha = 0;
 let animFrameId = null;
 let activeBranchIds = new Set();
+let ancestorBranchIds = new Set(); // Nhánh cha ông, cụ ở trên
 
 function getSubtreeIds(rootNode, targetIds = []) {
     const ids = new Set();
@@ -302,31 +303,8 @@ function startBranchFlashing() {
     renderLoop();
 }
 
-<!-- function initVisitList() { -->
-  <!-- if (!flatData || flatData.length === 0) return; -->
-  <!-- const rootNode = flatData.find(d => !d.parent); -->
-  <!-- if (!rootNode) return; -->
-
-  <!-- const childrenMap = new Map(); -->
-  <!-- flatData.forEach(item => { -->
-    <!-- if (item.parent) { -->
-      <!-- if (!childrenMap.has(item.parent)) childrenMap.set(item.parent, []); -->
-      <!-- childrenMap.get(item.parent).push(item); -->
-    <!-- } -->
-  <!-- }); -->
-
-  <!-- visitList = []; -->
-  <!-- const queue = [rootNode]; -->
-  <!-- while (queue.length > 0) { -->
-    <!-- const current = queue.shift(); -->
-    <!-- visitList.push(current); -->
-    <!-- const children = childrenMap.get(current.id) || []; -->
-    <!-- children.forEach(child => queue.push(child)); -->
-  <!-- } -->
-<!-- } -->
 function initVisitList() {
   if (!root) return;
-  // Lấy trực tiếp danh sách các node đang hiện (được expand) trên cây
   visitList = root.descendants();
 }
 
@@ -438,7 +416,7 @@ const treeLayout = d3.tree().nodeSize([nodeWidth + 12, levelHeight]).separation(
     return a.parent === b.parent ? 1 : 1.18;
 });
 
-function updateTree() {
+function updateTree(resetBranch = true) {
     treeLayout(root);
     root.descendants().forEach(d => { d.y = d.depth * levelHeight; });
     
@@ -447,12 +425,14 @@ function updateTree() {
         if (activeLines[i] === undefined) activeLines[i] = true;
     }
 
-    // Khởi tạo lại hiệu ứng nhấp nháy nhánh đặc biệt
-    const keysToFlash = ["ngan"]; 
-    activeBranchIds = getSubtreeIds(root, keysToFlash);
-    activeBranchIds.add("thanh_d5");
-    activeBranchIds.add("vinh");
-    activeBranchIds.add("huy");
+    if (resetBranch) {
+        const keysToFlash = ["ngan"]; 
+        activeBranchIds = getSubtreeIds(root, keysToFlash);
+        activeBranchIds.add("thanh_d5");
+        activeBranchIds.add("vinh");
+        activeBranchIds.add("huy");
+        ancestorBranchIds.clear();
+    }
 
     startBranchFlashing();
     draw();
@@ -468,7 +448,6 @@ function draw() {
         hoveredNode.descendants().forEach(desc => highlightedIds.add(desc.id));
     }
 
-    // Vẽ trống đồng nền
     if (bgDrumImg.complete && bgDrumImg.naturalWidth !== 0) {
 		const imgWidth = bgDrumImg.naturalWidth;
 		const imgHeight = bgDrumImg.naturalHeight;
@@ -506,11 +485,15 @@ function draw() {
             highlightedIds.has(link.target.id);
 
         const isBranchLink = activeBranchIds.has(link.source.id) && activeBranchIds.has(link.target.id);
+        const isAncestorLink = ancestorBranchIds.has(link.source.id) && (ancestorBranchIds.has(link.target.id) || activeBranchIds.has(link.target.id));
         const targetGenColor = getGenColor(link.target.depth);
 
         ctx.beginPath();
 
-        if (isBranchLink) {
+        if (isAncestorLink) {
+            ctx.strokeStyle = `rgba(245, 158, 11, ${0.5 + branchFlashAlpha * 0.5})`;
+            ctx.lineWidth = 2.5 + branchFlashAlpha * 1.5;
+        } else if (isBranchLink) {
             ctx.strokeStyle = `rgba(2, 132, 199, ${0.4 + branchFlashAlpha * 0.6})`;
             ctx.lineWidth = 1.8 + branchFlashAlpha * 1.5;
         } else {
@@ -549,6 +532,7 @@ function draw() {
         const isHighlighted = !hoveredNode || highlightedIds.has(d.id);
         const opacity = isHighlighted ? 1 : 0.4;
         const isBranchNode = activeBranchIds.has(d.id);
+        const isAncestorNode = ancestorBranchIds.has(d.id);
 
         ctx.save();
         ctx.globalAlpha = opacity;
@@ -563,15 +547,18 @@ function draw() {
             ctx.lineWidth = 2.5;
         } else if (isRootNode) {
             ctx.fillStyle = "#881337"; 
-            ctx.strokeStyle = "#f59e0b";
-            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = isAncestorNode ? `rgba(245, 158, 11, ${0.6 + branchFlashAlpha * 0.4})` : "#f59e0b";
+            ctx.lineWidth = 3;
         } else if (hoveredNode && highlightedIds.has(d.id)) {
             ctx.fillStyle = genColor.bg;
             ctx.strokeStyle = genColor.main;
             ctx.lineWidth = 2;
         } else {
             ctx.fillStyle = isAlive ? genColor.bg : "#f1f5f9";
-            if (isBranchNode) {
+            if (isAncestorNode) {
+                ctx.strokeStyle = `rgba(217, 119, 6, ${0.6 + branchFlashAlpha * 0.4})`;
+                ctx.lineWidth = 2.5 + branchFlashAlpha * 1.5;
+            } else if (isBranchNode) {
                 ctx.strokeStyle = `rgba(2, 132, 199, ${0.4 + branchFlashAlpha * 0.6})`;
                 ctx.lineWidth = 2 + branchFlashAlpha * 1.5;
             } else {
@@ -585,11 +572,13 @@ function draw() {
         ctx.fill();
         ctx.stroke();
 
-        if (isBranchNode && !isRootNode) {
+        if ((isBranchNode || isAncestorNode) && !isRootNode) {
             ctx.beginPath();
             ctx.roundRect(x - 2, y - 2, currentWidth + 4, currentHeight + 4, 8);
-            ctx.strokeStyle = `rgba(56, 189, 248, ${branchFlashAlpha * 0.8})`;
-            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = isAncestorNode 
+                ? `rgba(251, 191, 36, ${branchFlashAlpha * 0.9})` 
+                : `rgba(56, 189, 248, ${branchFlashAlpha * 0.8})`;
+            ctx.lineWidth = 1.8;
             ctx.stroke();
         }
 
@@ -656,7 +645,6 @@ function draw() {
             ctx.font = "500 10px 'Segoe UI', Arial, sans-serif";
             ctx.fillText(d.data.orderText || "", textX, y + 37);
 
-            // 🌿 BIỂU TƯỢNG LÁ CÂY KHÔNG NỀN
             const iconX = x + currentWidth - 14;
             const iconY = y + currentHeight - 12;
 
@@ -668,7 +656,6 @@ function draw() {
             ctx.restore();
         }
 
-        // Nút mở/đóng con cháu ở dưới đáy thẻ
         if (d.children || d._children) {
             const btnX = d.x;
             const btnY = y + currentHeight;
@@ -698,7 +685,6 @@ function draw() {
 
     ctx.restore();
 
-    // 3. Trục đời bên trái
     for (let depth = 0; depth <= maxDepth; depth++) {
         const lineY = transform.applyY(depth * levelHeight);
         const isLineActive = !!activeLines[depth];
@@ -813,7 +799,14 @@ function focusOnBranch(nodeId) {
     }
     expandAllDescendants(targetNode);
 
-    updateTree();
+    activeBranchIds = new Set(targetNode.descendants().map(d => d.id));
+    
+    ancestorBranchIds = new Set();
+    for (let i = 0; i < lineage.length - 1; i++) {
+        ancestorBranchIds.add(lineage[i].id);
+    }
+
+    updateTree(false);
     searchedNode = targetNode;
     focusOnNode(targetNode);
     startFlashing();
@@ -923,13 +916,16 @@ canvas.addEventListener('mousemove', (e) => {
         draw();
     }
 
-    if (isOverBranchBtn) {
+    // FIX CHẶN TOOLTIP ĐEN TRÊN DI ĐỘNG (chỉ hiện khi có con trỏ chuột thật sự)
+    const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
+
+    if (isOverBranchBtn && hasFinePointer) {
         canvas.style.cursor = 'pointer';
-        tooltip.style.display = 'none';
+        tooltip.style.display = 'block';
         tooltip.style.left = `${e.clientX}px`;
         tooltip.style.top = `${e.clientY}px`;
         tooltip.innerHTML = `🌿 Click để xem cô đọng nhánh này`;
-    } else if (hoveredNode) {
+    } else if (hoveredNode && hasFinePointer) {
         canvas.style.cursor = 'pointer';
         tooltip.style.display = 'block';
         tooltip.style.left = `${e.clientX}px`;
@@ -937,7 +933,7 @@ canvas.addEventListener('mousemove', (e) => {
         const countDescendants = hoveredNode.descendants().length - 1;
         const descText = countDescendants > 0 ? `<br><small style="color:#93c5fd">Hậu duệ trực hệ: ${countDescendants} người</small>` : '';
         tooltip.innerHTML = `<strong>${hoveredNode.data.name}</strong> (${hoveredNode.data.orderText || 'Thành viên'})<br>Thuộc: <b>ĐỜI ${romanNumeral[hoveredNode.depth]}</b>${descText}`;
-    } else if (hoveredDepth !== null) {
+    } else if (hoveredDepth !== null && hasFinePointer) {
         canvas.style.cursor = 'pointer';
         tooltip.style.display = 'block';
         tooltip.style.left = `${e.clientX}px`;
@@ -1008,7 +1004,7 @@ canvas.addEventListener('click', (e) => {
     if (clickedBranchBtnId) {
         focusOnBranch(clickedBranchBtnId);
     } else if (clickedNode && !clickedToggleBtn) {
-        //showModal(clickedNode.data);
+        showModal(clickedNode.data);
     }
 });
 
