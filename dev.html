@@ -925,10 +925,10 @@ canvas.addEventListener('mousemove', (e) => {
 
     if (isOverBranchBtn) {
         canvas.style.cursor = 'pointer';
-        tooltip.style.display = 'block';
+        tooltip.style.display = 'none';
         tooltip.style.left = `${e.clientX}px`;
         tooltip.style.top = `${e.clientY}px`;
-        //tooltip.innerHTML = `🌿 Click để xem cô đọng nhánh này`;
+        tooltip.innerHTML = `🌿 Click để xem cô đọng nhánh này`;
     } else if (hoveredNode) {
         canvas.style.cursor = 'pointer';
         tooltip.style.display = 'block';
