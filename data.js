@@ -85,7 +85,7 @@ const flatData = [
     { id: "vinh", parent: "thanh_d5", name: "VỊNH", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "ngan", parent: "thanh_d5", name: "NGÂN", orderText: "Con thứ 2", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "ngan_nung", parent: "ngan", name: "NÙNG", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
-    { id: "ngan_nung_thiep", parent: "ngan_nung", name: "THIỆP", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
+    { id: "ngan_nung_thiep", parent: "ngan_nung", name: "THIỆP", orderText: "Con thứ 1", isAlive: false, avatar: "ngan_nung_thiep.jpg" },
     { id: "ngan_nung_thiep_da", parent: "ngan_nung_thiep", name: "ĐA", orderText: "Con thứ 1", isAlive: false, avatar: "icons8-avatar-80.png" },
     { id: "ngan_nung_thiep_da_toan", parent: "ngan_nung_thiep_da", name: "TOẢN", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
     { id: "ngan_nung_thiep_da_toan_thinh", parent: "ngan_nung_thiep_da_toan", name: "THỊNH", orderText: "Con thứ 1", isAlive: true, avatar: "icons8-avatar-80.png" },
